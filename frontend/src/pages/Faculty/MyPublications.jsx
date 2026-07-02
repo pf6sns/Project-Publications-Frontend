@@ -121,47 +121,8 @@ export const PublicationsPage = ({
 
           {/* Publications listings (Responsive table & card views) */}
           <div className="space-y-4 animate-fade-in">
-            {/* Mobile/Tablet view cards */}
-            <div className="lg:hidden space-y-4">
-              {filteredFacultyPubs.map(pub => (
-                <div key={pub.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3 text-left transition-all duration-300 hover:scale-105 hover:shadow-md hover:border-slate-300">
-                  <div className="flex justify-between items-start">
-                    <span className="font-mono font-bold text-xs text-slate-400">{pub.id}</span>
-                    <span className={`px-2 py-0.5 text-[9px] uppercase font-mono font-extrabold rounded-full ${pub.status === 'Approved' ? 'bg-emerald-100 text-emerald-800' :
-                        pub.status === 'Pending' ? 'bg-amber-100 text-amber-800 animate-pulse' :
-                          'bg-slate-100 text-slate-600'
-                      }`}>
-                      {pub.status === 'Closed – Maximum Revision Limit Reached' ? 'Closed' : pub.status}
-                    </span>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="font-bold text-slate-900 block text-xs leading-snug">{pub.title}</span>
-                    <span className="text-[10px] text-slate-505 block">Category: {pub.category}</span>
-                  </div>
-                  <div className="text-[11px] text-slate-550 flex justify-between items-center border-t border-slate-100 pt-2 font-medium">
-                    <div>
-                      <p>Submitted: {new Date(pub.submissionDate).toLocaleDateString()}</p>
-                      <p>Version: <span className="font-mono font-bold text-slate-700" title={`Version ${pub.currentVersion}`}>V{pub.currentVersion}</span></p>
-                    </div>
-                    <button
-                      onClick={() => setSelectedPubId(pub.id)}
-                      className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg shadow-sm font-sans flex items-center space-x-1 cursor-pointer transition-all active:scale-95"
-                    >
-                      <Eye className="h-3 w-3" />
-                      <span>View</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-              {filteredFacultyPubs.length === 0 && (
-                <div className="p-8 text-center text-slate-455 italic font-semibold bg-white border border-slate-200 rounded-xl">
-                  No matching manuscripts filtered in research index. Please modify criteria.
-                </div>
-              )}
-            </div>
-
             {/* Desktop view table */}
-            <div className="hidden lg:block bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden text-left">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden text-left">
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-xs text-left">
                   <thead>
