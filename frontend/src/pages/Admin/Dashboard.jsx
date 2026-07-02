@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FacultyDashboardCharts } from '../../components/charts/DashboardGrid';
 import { useAuth } from '../../hooks/useAuth';
-import { getPublications } from '../../services/publicationService';
+import { usePublications } from '../../hooks/usePublications';
 import { ExportModal } from '../../components/common/ExportModal';
 import { SearchableDropdown } from '../../components/common/SearchableDropdown';
 import { Download } from 'lucide-react';
@@ -27,13 +27,9 @@ const INSTITUTION_OPTIONS = [
 
 export default function DashboardPage() {
   const { currentUser } = useAuth();
-  const [publications, setPublications] = useState([]);
+  const { publications } = usePublications();
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [selectedInstitution, setSelectedInstitution] = useState('All Institutions');
-
-  useEffect(() => {
-    getPublications().then(setPublications);
-  }, []);
 
   // Filter publications by institution dynamically
   const adminPublications = publications.filter(p => {

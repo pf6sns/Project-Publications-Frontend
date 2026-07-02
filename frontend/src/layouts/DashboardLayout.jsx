@@ -25,10 +25,12 @@ import snsLogo from '../assets/logos/sns-logo.png';
 
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
+import { useNotifications } from '../hooks/useNotifications';
 
 export default function DashboardLayout() {
   const { currentUser, logout, users } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { notifications, unreadCount, markAllRead } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -36,8 +38,7 @@ export default function DashboardLayout() {
   const [logoPulse, setLogoPulse] = useState(false);
   const [isNotifDropdownOpen, setIsNotifDropdownOpen] = useState(false);
 
-  // Mock states for remaining globals
-  const [notifications, setNotifications] = useState([]);
+  // Session modal state
   const [sessionExpiryOpen, setSessionExpiryOpen] = useState(false);
   const [sessionTimeLeft, setSessionTimeLeft] = useState(15);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
@@ -48,7 +49,7 @@ export default function DashboardLayout() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const activeUnreadNotifsCount = 0; // Mock until wired to NotificationService
+  const activeUnreadNotifsCount = unreadCount;
 
   const handleSignOut = () => {
     logout();
@@ -177,7 +178,17 @@ export default function DashboardLayout() {
           </div>
           <div className="flex items-center space-x-3">
             <ThemeToggle theme={theme} onToggle={toggleTheme} />
-            <button className="p-2.5 rounded-xl transition-all duration-300 relative border flex items-center justify-center cursor-pointer bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700"><Bell className="h-5 w-5" /></button>
+            <button 
+              onClick={markAllRead}
+              className="p-2.5 rounded-xl transition-all duration-300 relative border flex items-center justify-center cursor-pointer bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+            >
+              <Bell className="h-5 w-5" />
+              {activeUnreadNotifsCount > 0 && (
+                <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {activeUnreadNotifsCount > 9 ? '9+' : activeUnreadNotifsCount}
+                </span>
+              )}
+            </button>
           </div>
         </header>
         <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">

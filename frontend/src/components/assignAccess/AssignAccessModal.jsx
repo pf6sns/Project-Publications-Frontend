@@ -13,6 +13,7 @@ import {
   FileText,
   Check
 } from 'lucide-react';
+import { Modal } from '../common/Modal';
 
 const PAGES = [
   { id: 'dashboard', label: 'Dashboard' },
@@ -134,80 +135,15 @@ export function GrantAssessorModal({
       </div>
     );
   }
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm animate-fade-in" onClick={onClose} />
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-visible relative z-10 animate-scale-in flex flex-col max-h-[90vh]">
-        
-        {/* Header */}
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 rounded-t-2xl">
-          <div className="flex items-center space-x-2">
-            <ShieldCheck className="h-5 w-5 text-emerald-600" />
-            <h2 className="text-lg font-bold text-slate-800">Assign Granular Access</h2>
-          </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-200">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Scrollable Content */}
-        <div className="p-6 space-y-4 overflow-y-auto custom-scrollbar">
-          
-          <div>
-            
-            <p className="text-sm text-slate-500 mb-4">Select the pages and features to grant to <span className="font-bold">{facultyUser.name}</span>:</p>
-
-            <div className="bg-slate-50 rounded-xl border border-slate-200 overflow-visible p-4 space-y-4 text-left">
-              {/* Pages Section */}
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 ml-0.5">
-                  Pages Access
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">
-                  {PAGES.map(page => (
-                    <label key={page.id} className="flex items-center gap-2.5 cursor-pointer group">
-                      <input 
-                        type="checkbox" 
-                        className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer accent-emerald-600 shrink-0"
-                        checked={selectedPages.includes(page.id)}
-                        onChange={() => handleTogglePage(page.id)}
-                      />
-                      <span className="text-sm text-slate-700 group-hover:text-slate-900 leading-tight">
-                        {page.label}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Features Section */}
-              <div className="pt-2">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 ml-0.5">
-                  Specific Features
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">
-                  {FEATURES.map(feature => (
-                    <label key={feature.id} className="flex items-center gap-2.5 cursor-pointer group">
-                      <input 
-                        type="checkbox" 
-                        className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer accent-emerald-600 shrink-0"
-                        checked={selectedFeatures.includes(feature.id)}
-                        onChange={() => handleToggleFeature(feature)}
-                      />
-                      <span className="text-sm text-slate-700 group-hover:text-slate-900 leading-tight">
-                        {feature.label}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Actions */}
-        <div className="p-5 bg-slate-50 border-t border-slate-100 flex items-center justify-end space-x-3 rounded-b-2xl">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Assign Granular Access"
+      icon={ShieldCheck}
+      maxWidthClass="max-w-xl"
+      footerActions={
+        <>
           <button 
             type="button" 
             onClick={onClose}
@@ -224,9 +160,58 @@ export function GrantAssessorModal({
             <Check className="h-4 w-4" />
             <span>Confirm & Assign</span>
           </button>
+        </>
+      }
+    >
+      <div>
+        <p className="text-sm text-slate-500 mb-4">Select the pages and features to grant to <span className="font-bold">{facultyUser.name}</span>:</p>
+
+        <div className="bg-slate-50 rounded-xl border border-slate-200 overflow-visible p-4 space-y-4 text-left">
+          {/* Pages Section */}
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 ml-0.5">
+              Pages Access
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">
+              {PAGES.map(page => (
+                <label key={page.id} className="flex items-center gap-2.5 cursor-pointer group">
+                  <input 
+                    type="checkbox" 
+                    className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer accent-emerald-600 shrink-0"
+                    checked={selectedPages.includes(page.id)}
+                    onChange={() => handleTogglePage(page.id)}
+                  />
+                  <span className="text-sm text-slate-700 group-hover:text-slate-900 leading-tight">
+                    {page.label}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Features Section */}
+          <div className="pt-2">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 ml-0.5">
+              Specific Features
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">
+              {FEATURES.map(feature => (
+                <label key={feature.id} className="flex items-center gap-2.5 cursor-pointer group">
+                  <input 
+                    type="checkbox" 
+                    className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer accent-emerald-600 shrink-0"
+                    checked={selectedFeatures.includes(feature.id)}
+                    onChange={() => handleToggleFeature(feature)}
+                  />
+                  <span className="text-sm text-slate-700 group-hover:text-slate-900 leading-tight">
+                    {feature.label}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
         </div>
-        
       </div>
-    </div>
+    </Modal>
   );
 }

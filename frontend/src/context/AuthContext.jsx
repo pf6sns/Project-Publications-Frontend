@@ -1,106 +1,84 @@
 /**
- * @license
- * SPDX-License-Identifier: Apache-2.0
+ * context/AuthContext.jsx
+ *
+ * Authentication Context.
+ * Manages ONLY React state for the current user session.
+ * All data operations delegate to authService — never to data.js or localStorage directly.
+ *
+ * Current: delegates to authService (mock)
+ * Future:  same code, authService delegates to JWT-backed API
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { mockUsers } from '../data';
+import * as authService from '../services/authService';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [users, setUsers] = useState(() => {
-    const saved = localStorage.getItem('rpms_users_record');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      let updated = false;
-      Object.keys(parsed).forEach(k => {
-        if (mockUsers[k]) {
-          if (parsed[k].email !== mockUsers[k].email) {
-            parsed[k].email = mockUsers[k].email;
-            updated = true;
-          }
-          if (parsed[k].designation !== mockUsers[k].designation) {
-            parsed[k].designation = mockUsers[k].designation;
-            updated = true;
-          }
-        }
-      });
-      if (updated) {
-        localStorage.setItem('rpms_users_record', JSON.stringify(parsed));
-      }
-      return parsed;
-    }
-    return mockUsers;
-  });
+  const [users, setUsers] = useState({});
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem('rpms_user');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      const savedMap = localStorage.getItem('rpms_users_record');
-      if (savedMap) {
-        const parsedMap = JSON.parse(savedMap);
-        if (parsedMap[parsed.id]) {
-          return parsedMap[parsed.id];
-        }
-      }
-      return parsed;
-    }
-    return null;
-  });
-
+  // Restore session on mount (equivalent to GET /auth/me in production)
   useEffect(() => {
-    localStorage.setItem('rpms_users_record', JSON.stringify(users));
-  }, [users]);
-
-  useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem('rpms_user', JSON.stringify(currentUser));
-    } else {
-      localStorage.removeItem('rpms_user');
-    }
-  }, [currentUser]);
-
-  const login = (email, password) => {
-    const inputEmail = email.trim().toLowerCase();
-    const matched = Object.values(users).find(u => u.email.toLowerCase() === inputEmail);
-
-    if (!matched) {
-      return { success: false, error: 'Invalid credentials. Email address not registered.' };
-    }
-
-    if (matched.role === 'Faculty') {
-      if (password !== 'faculty123') {
-        return { success: false, error: 'Incorrect password. For Faculty, use: faculty123' };
+    const init = async () => {
+      try {
+        const [restoredUser, allUsers] = await Promise.all([
+          authService.restoreSession(),
+          authService.getAllUsers(),
+        ]);
+        setUsers(allUsers);
+        setCurrentUser(restoredUser);
+      } catch (err) {
+        console.error('[AuthContext] Failed to restore session:', err);
+      } finally {
+        setIsInitialized(true);
       }
-    } else if (matched.role === 'Admin') {
-      if (password !== 'admin123') {
-        return { success: false, error: 'Incorrect password. For Admin, use: admin123' };
-      }
-    }
+    };
+    init();
+  }, []);
 
-    setCurrentUser(matched);
-    return { success: true, user: matched };
+  /**
+   * Logs in a user.
+   *
+   * @param {string} email
+   * @param {string} password
+   * @returns {{ success: boolean, user?: object, error?: string }}
+   */
+  const login = async (email, password) => {
+    const result = await authService.login(email, password);
+    if (result.success) {
+      setCurrentUser(result.user);
+    }
+    return result;
   };
 
-  const logout = () => {
+  /**
+   * Logs out the current user.
+   */
+  const logout = async () => {
+    await authService.logout();
     setCurrentUser(null);
   };
 
-  const updateUser = (oldId, updatedUser) => {
-    setUsers(prev => {
-      const nextUsers = { ...prev };
-      if (oldId !== updatedUser.id) {
-        delete nextUsers[oldId];
-      }
-      nextUsers[updatedUser.id] = updatedUser;
-      return nextUsers;
-    });
-    if (currentUser?.id === oldId) {
+  /**
+   * Updates a user profile record (used by Profile page).
+   *
+   * @param {string} oldId
+   * @param {object} updatedUser
+   */
+  const updateUser = async (oldId, updatedUser) => {
+    const nextUsers = await authService.updateUserRecord(oldId, updatedUser);
+    setUsers(nextUsers);
+    if (currentUser?.id === oldId || currentUser?.id === updatedUser.id) {
       setCurrentUser(updatedUser);
     }
   };
+
+  if (!isInitialized) {
+    // Do not render children until session is restored
+    return null;
+  }
 
   return (
     <AuthContext.Provider value={{ users, setUsers, currentUser, setCurrentUser, login, logout, updateUser }}>

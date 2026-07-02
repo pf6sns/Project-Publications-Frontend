@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useRole } from '../../hooks/useRole';
 import { getPublications, submitPublication, evaluatePublication } from '../../services/publicationService';
+import { Spinner } from './Spinner';
 
 export default function PageWrapper({ Component, additionalProps = {} }) {
   const { currentUser, users } = useAuth();
@@ -48,7 +49,7 @@ export default function PageWrapper({ Component, additionalProps = {} }) {
   };
 
   if (loading) {
-    return <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold animate-pulse">Loading System Data...</div>;
+    return <Spinner fullPage label="Loading System Data..." />;
   }
 
   return (
