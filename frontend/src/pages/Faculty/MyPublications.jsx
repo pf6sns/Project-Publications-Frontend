@@ -255,23 +255,17 @@ export const PublicationsPage = ({
                     const v = target.versions[target.versions.length - 1];
                     if (!v || !v.reviewDate) return null;
                     return (
-                      <>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Date Reviewed:</span>
-                          <span className="text-slate-800 font-extrabold">
-                            {new Date(v.reviewDate).toLocaleDateString('en-US', {
-                              weekday: 'long',
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
-                            })}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Reviewed By:</span>
-                          <span className="text-slate-800 font-extrabold">{target.assignedReviewerId ? 'Admin' : 'System Admin'}</span>
-                        </div>
-                      </>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Date Reviewed:</span>
+                        <span className="text-slate-800 font-extrabold">
+                          {new Date(v.reviewDate).toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      </div>
                     );
                   })()}
                 </div>
