@@ -16,6 +16,7 @@ import {
   LineChart,
   X,
   Menu,
+  Users
 } from 'lucide-react';
 
 import { SessionModal, LogoutConfirmationModal } from '../components/auth/index';
@@ -135,6 +136,7 @@ export default function DashboardLayout() {
             ) : (
               <>
                 {renderSidebarButton('/admin/dashboard', 'Dashboard', LayoutDashboard)}
+                {renderSidebarButton('/admin/faculty', 'Faculty Profiles', Users)}
                 {renderSidebarButton('/admin/queue', 'Submissions Queue', CheckSquare)}
                 {renderSidebarButton('/admin/upload', 'Upload Manuscript', Upload)}
                 {renderSidebarButton('/admin/publications', 'My Publications', BookOpen)}

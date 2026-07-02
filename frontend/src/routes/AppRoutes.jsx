@@ -17,6 +17,9 @@ import AdminDashboardPage from '../pages/Admin/Dashboard';
 import { AdminQueuePage } from '../pages/Admin/SubmissionsQueue';
 import { AdminEvaluationPage } from '../pages/Admin/EvaluationConsole';
 import { AssignAccessPage } from '../pages/Admin/AssignAccess';
+import { AdminStatsPage } from '../pages/Admin/InstitutionStatistics';
+import { AdminDelegationPage } from '../pages/Admin/DelegateReview';
+import { AdminFacultyProfilesPage } from '../pages/Admin/FacultyProfiles';
 
 // Faculty Pages
 import { UploadPage } from '../pages/Faculty/UploadManuscript';
@@ -42,6 +45,7 @@ export default function AppRoutes() {
           <Route path="/admin/upload" element={<PageWrapper Component={UploadPage} />} />
           <Route path="/admin/publications" element={<PageWrapper Component={PublicationsPage} />} />
           <Route path="/admin/profile" element={<PageWrapper Component={ProfilePage} />} />
+          <Route path="/admin/faculty" element={<PageWrapper Component={AdminFacultyProfilesPage} />} />
         </Route>
 
         {/* Faculty Routes */}

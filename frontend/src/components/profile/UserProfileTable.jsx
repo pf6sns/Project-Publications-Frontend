@@ -10,10 +10,10 @@ import {
   Phone, 
   Building,
   GraduationCap,
-  Shield
+  Link as LinkIcon
 } from 'lucide-react';
 
-export function UserProfile({ user }) {
+export function UserProfile({ user, globalFields = [] }) {
   const name = user.name;
   const email = user.email;
   const dept = user.department;
@@ -86,15 +86,15 @@ export function UserProfile({ user }) {
             </div>
           </div>
 
-          {/* 3. Role */}
+          {/* 3. Email ID */}
           <div className="bg-slate-50/45 p-5 rounded-2xl border border-platinum-silver/45 flex items-center space-x-4 hover:bg-slate-50 transition-colors">
             <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center border border-platinum-silver/30 shadow-3xs shrink-0 select-none">
-              <Shield className="h-4.5 w-4.5 text-steel-gray" />
+              <Mail className="h-4.5 w-4.5 text-steel-gray" />
             </div>
             <div className="flex-1 min-w-0">
-              <span className="block text-[10px] font-extrabold uppercase text-slate-400 tracking-wider select-none">System Role</span>
-              <span className="block text-sm font-bold text-charcoal leading-snug truncate uppercase">
-                {user.role || 'Faculty'}
+              <span className="block text-[10px] font-extrabold uppercase text-slate-400 tracking-wider select-none">Email ID</span>
+              <span className="block text-sm font-bold text-charcoal leading-snug truncate">
+                {user.email || ''}
               </span>
             </div>
           </div>
@@ -111,6 +111,35 @@ export function UserProfile({ user }) {
           </div>
 
         </div>
+
+        {/* Global Profile URL Fields */}
+        {globalFields && globalFields.length > 0 && (
+          <div className="mt-8 border-t border-platinum-silver/45 pt-8">
+            <h4 className="text-sm font-bold text-charcoal mb-4 uppercase tracking-wider">Web Profiles</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {globalFields.map(field => {
+                const value = user.profileUrls?.[field.id] || '';
+                return (
+                  <div key={field.id} className="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl border border-platinum-silver/30">
+                    <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center border border-platinum-silver/30 shrink-0">
+                      <LinkIcon className="h-4 w-4 text-steel-gray" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="block text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">{field.name}</span>
+                      {value ? (
+                        <a href={value} target="_blank" rel="noopener noreferrer" className="block text-sm font-medium text-blue-600 truncate hover:underline">
+                          {value}
+                        </a>
+                      ) : (
+                        <span className="block text-sm font-medium text-gray-300 italic"></span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
