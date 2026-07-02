@@ -18,6 +18,14 @@
   --color-mist-silver: #D2D6DC;
   --color-brushed-silver: #BEC2C9;
   
+  /* Dark Theme Colors */
+  --color-graphite: #121212;
+  --color-charcoal-gray: #1E1E1E;
+  --color-titanium-gray: #8A8D91;
+  --color-snow-white: #F9FAFB;
+  --color-stone-gray: #A3A3A3;
+  --color-gunmetal-gray: #545659;
+  
   --color-approved: #10B981;
   --color-rejected: #DC2626;
   --color-pending: #9CA3AF;
