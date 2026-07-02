@@ -103,6 +103,7 @@ export default function DashboardLayout() {
     if (path.includes('/assign-access')) return 'Assign Access';
     if (path.includes('/upload')) return 'Upload Manuscript';
     if (path.includes('/publications')) return 'My Publications';
+    if (path.includes('/admin/faculty')) return 'Faculty Profiles';
     if (path.includes('/profile')) return 'Profile';
     return 'RPMS System';
   };
