@@ -23,7 +23,6 @@ import { AdminFacultyProfilesPage } from '../pages/Admin/FacultyProfiles';
 import { UploadPage } from '../pages/Faculty/UploadManuscript';
 import { PublicationsPage } from '../pages/Faculty/MyPublications';
 import { ProfilePage } from '../pages/Shared/Profile';
-import { TempAdminPage } from '../pages/Shared/TempAdminPage'; // Wait, I moved TempAdminPage somewhere... I think I left it or didn't move it?
 
 export default function AppRoutes() {
   return (
@@ -51,7 +50,6 @@ export default function AppRoutes() {
           <Route path="/faculty/upload" element={<PageWrapper Component={UploadPage} />} />
           <Route path="/faculty/publications" element={<PageWrapper Component={PublicationsPage} />} />
           <Route path="/faculty/profile" element={<PageWrapper Component={ProfilePage} />} />
-          <Route path="/faculty/evaluation" element={<PageWrapper Component={TempAdminPage} />} />
         </Route>
 
         {/* Catch-all redirect */}

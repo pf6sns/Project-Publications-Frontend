@@ -133,14 +133,6 @@ export default function DashboardLayout() {
               <>
                 {renderSidebarButton('/faculty/upload', 'Upload Manuscript', Upload)}
                 {renderSidebarButton('/faculty/publications', 'My Publications', BookOpen)}
-                {currentUser.isTemporaryAdmin && (
-                  <>
-                    {/* Evaluation Console — shown if granted evaluation page or evaluate_manuscript feature */}
-                    {(currentUser.granularPermissions?.pages?.includes('evaluation') ||
-                      currentUser.granularPermissions?.features?.includes('evaluate_manuscript')) &&
-                      renderSidebarButton('/faculty/evaluation', 'Evaluation Console', ShieldCheck)}
-                  </>
-                )}
               </>
             ) : (
               <>
