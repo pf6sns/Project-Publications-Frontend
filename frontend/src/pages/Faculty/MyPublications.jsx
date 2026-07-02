@@ -235,7 +235,7 @@ export const PublicationsPage = ({
                 </h3>
 
                 {/* Faculty Name Prominently Displayed & Dates */}
-                <div className="pt-4 pb-2 space-y-2 border-t border-slate-200 text-xs font-semibold text-slate-600 flex flex-col items-center">
+                <div className="pt-4 pb-2 space-y-2 border-t border-slate-200 text-xs font-semibold text-slate-600 flex flex-col items-start">
                   <div className="flex items-center space-x-2">
                     <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Faculty Author:</span>
                     <span className="text-slate-800 font-extrabold">{target.author}</span>
