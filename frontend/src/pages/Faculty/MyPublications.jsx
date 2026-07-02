@@ -216,116 +216,116 @@ export const PublicationsPage = ({
             if (!target) return null;
             return (
               <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm text-left animate-fade-in space-y-6">
-                {/* Publication Header Card */}
-                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4">
-                  {/* Badges Row */}
-                  <div className="flex justify-between items-center w-full">
-                    <span className="bg-white border border-slate-200 font-mono font-bold px-3 py-1.5 rounded-lg text-xs text-slate-700 shadow-3xs">
-                      ID: {target.id}
-                    </span>
-                    <span className={`px-3 py-1.5 rounded-lg text-xs uppercase font-mono font-extrabold shadow-3xs border ${target.status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-250' :
-                        target.status === 'Pending' ? 'bg-amber-50 text-amber-700 border-amber-250' :
-                          'bg-slate-50 text-slate-600 border-slate-200'
-                      }`}>
-                      {target.status === 'Closed – Maximum Revision Limit Reached' ? 'Closed' : target.status}
-                    </span>
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="font-sans font-black text-slate-900 text-2xl leading-tight tracking-tight pt-1 text-center w-full">
-                    {target.title}
-                  </h3>
-
-                  {/* Faculty Name Prominently Displayed & Date of Submission */}
-                  <div className="pt-3 space-y-2 border-t border-slate-200 text-xs font-semibold text-slate-600 flex flex-col items-center">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Faculty Author:</span>
-                      <span className="text-slate-800 font-extrabold">{target.author}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Date of Submission:</span>
-                      <span className="text-slate-800 font-extrabold">
-                        {new Date(target.submissionDate).toLocaleDateString('en-US', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </span>
-                    </div>
-                  </div>
+                {/* Badges Row */}
+                <div className="flex justify-between items-center w-full">
+                  <span className="bg-white border border-slate-200 font-mono font-bold px-3 py-1.5 rounded-lg text-xs text-slate-700 shadow-3xs">
+                    ID: {target.id}
+                  </span>
+                  <span className={`px-3 py-1.5 rounded-lg text-xs uppercase font-mono font-extrabold shadow-3xs border ${target.status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-250' :
+                      target.status === 'Pending' ? 'bg-amber-50 text-amber-700 border-amber-250' :
+                        'bg-slate-50 text-slate-600 border-slate-200'
+                    }`}>
+                    {target.status === 'Closed – Maximum Revision Limit Reached' ? 'Closed' : target.status}
+                  </span>
                 </div>
 
-                {/* Version Control - Only show Current Version */}
-                <div className="space-y-4">
+                {/* Title */}
+                <h3 className="font-sans font-black text-slate-900 text-2xl leading-tight tracking-tight pt-1 text-center w-full">
+                  {target.title}
+                </h3>
+
+                {/* Faculty Name Prominently Displayed & Dates */}
+                <div className="pt-4 pb-2 space-y-2 border-t border-slate-200 text-xs font-semibold text-slate-600 flex flex-col items-center">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Faculty Author:</span>
+                    <span className="text-slate-800 font-extrabold">{target.author}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Date of Submission:</span>
+                    <span className="text-slate-800 font-extrabold">
+                      {new Date(target.submissionDate).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </span>
+                  </div>
+                  {(() => {
+                    const v = target.versions[target.versions.length - 1];
+                    if (!v || !v.reviewDate) return null;
+                    return (
+                      <>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Date Reviewed:</span>
+                          <span className="text-slate-800 font-extrabold">
+                            {new Date(v.reviewDate).toLocaleDateString('en-US', {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Reviewed By:</span>
+                          <span className="text-slate-800 font-extrabold">{target.assignedReviewerId ? 'Admin' : 'System Admin'}</span>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+
+                {/* Downloads Section Division */}
+                <div className="border-t border-slate-200 pt-6">
                   {(() => {
                     const v = target.versions[target.versions.length - 1];
                     if (!v) return null;
                     return (
-                      <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-2xs space-y-4 relative hover:border-slate-350 transition-all">
-                        <div className="flex items-center font-bold border-b border-slate-100 pb-2.5">
-                          <div className="flex items-center space-x-2">
-                            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-slate-900 text-sm font-extrabold">Current Version: V{v.version}</span>
+                      <div className="flex flex-col space-y-3">
+                        {/* Faculty Document Slot */}
+                        <div className="bg-slate-50/70 hover:bg-slate-50 p-4 rounded-xl border border-slate-200/80 hover:border-slate-300 transition-all flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-left w-full">
+                          <div className="flex-1 min-w-0">
+                            <span className="text-[8px] uppercase font-bold tracking-wider text-slate-400 block">Faculty Upload</span>
+                            <p className="text-xs font-bold text-slate-800 truncate" title={v.fileName}>{v.fileName}</p>
+                            <span className="text-[10px] text-slate-500 font-mono block">{v.fileSize}</span>
                           </div>
+                          <button
+                            type="button"
+                            onClick={() => downloadFile(target.id, v.version, v.fileName)}
+                            className="py-2 px-4 text-xs font-bold rounded-lg flex items-center justify-center space-x-1.5 cursor-pointer shadow-xs active:scale-98 transition-all shrink-0 w-full sm:w-45 bg-emerald-600 hover:bg-emerald-700 text-white"
+                          >
+                            <Download className="h-3.5 w-3.5 text-white" />
+                            <span>Download Original</span>
+                          </button>
                         </div>
 
-                        <div className="flex flex-col gap-1 text-[10px] text-slate-400 font-mono">
-                          <span>Uploaded Date: {new Date(v.uploadDate).toLocaleDateString()}</span>
-                          {v.reviewDate && (
-                            <>
-                              <span>Reviewed Date: {new Date(v.reviewDate).toLocaleDateString()}</span>
-                              <span>Reviewed By: {target.assignedReviewerId ? 'Admin' : 'System Admin'}</span>
-                            </>
-                          )}
-                        </div>
-
-                        {/* Download Slots Stacking Vertically */}
-                        <div className="flex flex-col space-y-3 pt-1">
-                          {/* Faculty Document Slot */}
+                        {/* Show the Reviewed PDF if it exists */}
+                        {(v.reviewedFileName || v.reviewDate) && (
                           <div className="bg-slate-50/70 hover:bg-slate-50 p-4 rounded-xl border border-slate-200/80 hover:border-slate-300 transition-all flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-left w-full">
                             <div className="flex-1 min-w-0">
-                              <span className="text-[8px] uppercase font-bold tracking-wider text-slate-400 block">Faculty Upload</span>
-                              <p className="text-xs font-bold text-slate-800 truncate" title={v.fileName}>{v.fileName}</p>
-                              <span className="text-[10px] text-slate-500 font-mono block">{v.fileSize}</span>
+                              <span className="text-[8px] uppercase font-bold tracking-wider text-slate-400 block">Dean Evaluation PDF</span>
+                              <p className="text-xs font-bold text-slate-850 truncate" title={v.reviewedFileName || `reviewed_${v.fileName.replace('.pdf', '')}.pdf`}>
+                                {v.reviewedFileName || `reviewed_${v.fileName.replace('.pdf', '')}.pdf`}
+                              </p>
                             </div>
                             <button
                               type="button"
-                              onClick={() => downloadFile(target.id, v.version, v.fileName)}
+                              onClick={() => downloadFile(target.id, v.version, v.reviewedFileName || `reviewed_${v.fileName}`)}
                               className="py-2 px-4 text-xs font-bold rounded-lg flex items-center justify-center space-x-1.5 cursor-pointer shadow-xs active:scale-98 transition-all shrink-0 w-full sm:w-45 bg-emerald-600 hover:bg-emerald-700 text-white"
                             >
                               <Download className="h-3.5 w-3.5 text-white" />
-                              <span>Download Original</span>
+                              <span>Download Reviewed</span>
                             </button>
                           </div>
+                        )}
 
-                          {/* Show the Reviewed PDF if it exists */}
-                          {(v.reviewedFileName || v.reviewDate) && (
-                            <div className="bg-slate-50/70 hover:bg-slate-50 p-4 rounded-xl border border-slate-200/80 hover:border-slate-300 transition-all flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-left w-full">
-                              <div className="flex-1 min-w-0">
-                                <span className="text-[8px] uppercase font-bold tracking-wider text-slate-400 block">Dean Evaluation PDF</span>
-                                <p className="text-xs font-bold text-slate-850 truncate" title={v.reviewedFileName || `reviewed_${v.fileName.replace('.pdf', '')}.pdf`}>
-                                  {v.reviewedFileName || `reviewed_${v.fileName.replace('.pdf', '')}.pdf`}
-                                </p>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => downloadFile(target.id, v.version, v.reviewedFileName || `reviewed_${v.fileName}`)}
-                                className="py-2 px-4 text-xs font-bold rounded-lg flex items-center justify-center space-x-1.5 cursor-pointer shadow-xs active:scale-98 transition-all shrink-0 w-full sm:w-45 bg-emerald-600 hover:bg-emerald-700 text-white"
-                              >
-                                <Download className="h-3.5 w-3.5 text-white" />
-                                <span>Download Reviewed</span>
-                              </button>
-                            </div>
-                          )}
-
-                          {/* Reupload Lock Warning Card (For latest version if Closed limit reached) */}
-                          {target.status === 'Closed – Maximum Revision Limit Reached' && (
-                            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center animate-fade-in w-full">
-                              <span className="text-xs font-bold text-slate-500">Maximum revision attempts reached.</span>
-                            </div>
-                          )}
-                        </div>
+                        {/* Reupload Lock Warning Card (For latest version if Closed limit reached) */}
+                        {target.status === 'Closed – Maximum Revision Limit Reached' && (
+                          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center animate-fade-in w-full mt-3">
+                            <span className="text-xs font-bold text-slate-500">Maximum revision attempts reached.</span>
+                          </div>
+                        )}
                       </div>
                     );
                   })()}
