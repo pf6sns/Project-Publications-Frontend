@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — Standalone</title>
+  <meta name="description" content="Standalone Admin Dashboard with premium animations, text effects, hover effects, and interactive charts. Ready to embed in any website." />
+
+  <!-- Google Fonts: Geist + Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js CDN for interactive charts (no build tools needed) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       DESIGN TOKENS & VARIABLES (mirrors the RPMS design system)
+       ═══════════════════════════════════════════════════════════════ */
+    :root {
+      --font-sans: "Geist", "Inter", system-ui, sans-serif;
+
+      /* Color palette */
+      --arctic-white: #F4F6F9;
+      --ice-gray: #EAECEF;
+      --pure-white: #FFFFFF;
+      --platinum-silver: #DCDFE4;
+      --steel-gray: #6B7281;
+      --charcoal: #1E2530;
+      --slate-gray: #5E6977;
+      --frost-gray: #E2E5E9;
+      --mist-silver: #D2D6DC;
+      --brushed-silver: #BEC2C9;
+
+      /* Status colors */
+      --approved: #10B981;
+      --approved-deep: #047857;
+      --rejected: #DC2626;
+      --rejected-light: #F87171;
+      --pending: #F59E0B;
+      --pending-deep: #D97706;
+
+      /* Chart variables */
+      --chart-grid: #E2E5E9;
+      --chart-text: #1E2530;
+      --chart-label: #6B7281;
+      --chart-cursor: #F4F6F9;
+    }
+
+    /* Dark mode variables */
+    .dark {
+      --arctic-white: #13171d;
+      --ice-gray: #171c24;
+      --pure-white: #1e2530;
+      --platinum-silver: #2e3748;
+      --steel-gray: #94a3b8;
+      --charcoal: #f8fafc;
+      --slate-gray: #94a3b8;
+      --frost-gray: #252d3d;
+      --mist-silver: #2e3748;
+      --brushed-silver: #3c485d;
+
+      --chart-grid: #2e3748;
+      --chart-text: #f8fafc;
+      --chart-label: #94a3b8;
+      --chart-cursor: #171c24;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       GLOBAL RESETS & BASE STYLES
+       ═══════════════════════════════════════════════════════════════ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      font-family: var(--font-sans);
+      background-color: var(--arctic-white);
+      color: var(--charcoal);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      user-select: none;
+      transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                  color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body {
+      padding: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Smooth transitions for theme switching */
+    div, p, span, h1, h2, h3, h4, h5, h6, button, select {
+      transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                  border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                  color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                  box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #D1D5DB; }
+    .dark ::-webkit-scrollbar-thumb { background: #2e3748; }
+    .dark ::-webkit-scrollbar-thumb:hover { background: #3f4e66; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       KEYFRAME ANIMATIONS
+       ═══════════════════════════════════════════════════════════════ */
+
+    /* Fade-in entrance */
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fade-in 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    /* Staggered fade-in delays */
+    .animate-delay-1 { animation-delay: 0.1s; }
+    .animate-delay-2 { animation-delay: 0.2s; }
+    .animate-delay-3 { animation-delay: 0.3s; }
+    .animate-delay-4 { animation-delay: 0.4s; }
+
+    /* Neon grey pulse glow */
+    @keyframes neon-grey-pulse {
+      0%, 100% {
+        box-shadow: 0 0 20px 2px rgba(107, 114, 128, 0.35),
+                    0 0 8px 0.5px rgba(156, 163, 175, 0.15);
+        border-color: var(--platinum-silver);
+      }
+      50% {
+        box-shadow: 0 0 30px 6px rgba(107, 114, 128, 0.55),
+                    0 0 12px 2px rgba(156, 163, 175, 0.35);
+        border-color: var(--brushed-silver);
+      }
+    }
+
+    .neon-grey-glow {
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    .neon-grey-glow:hover {
+      transform: scale(1.003) !important;
+      animation: neon-grey-pulse 2.5s infinite ease-in-out !important;
+    }
+
+    /* Shimmer text shine effect */
+    @keyframes text-shine-flow {
+      0%   { background-position: 200% center; }
+      100% { background-position: -200% center; }
+    }
+
+    .text-shine {
+      background: linear-gradient(
+        90deg,
+        var(--charcoal) 0%,
+        var(--charcoal) 25%,
+        #94a3b8 50%,
+        var(--charcoal) 75%,
+        var(--charcoal) 100%
+      );
+      background-size: 200% auto;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      background-clip: text !important;
+      animation: text-shine-flow 5s linear infinite !important;
+      display: inline-block;
+    }
+    .dark .text-shine {
+      background: linear-gradient(
+        90deg,
+        #f8fafc 0%, #f8fafc 25%, #94a3b8 50%, #f8fafc 75%, #f8fafc 100%
+      );
+      background-size: 200% auto;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      background-clip: text !important;
+      animation: text-shine-flow 5s linear infinite !important;
+    }
+
+    /* Count-up entrance for stat cards */
+    @keyframes count-up {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Pulse ring for status indicators */
+    @keyframes pulse-ring {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+      50%      { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+    }
+
+    /* Premium button hover feedback */
+    button {
+      transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1) !important;
+      cursor: pointer;
+    }
+    button:hover {
+      transform: translateY(-1.5px);
+      filter: brightness(1.05);
+    }
+    button:active {
+      transform: translateY(0.5px) scale(0.98);
+      filter: brightness(0.95);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       LAYOUT COMPONENTS
+       ═══════════════════════════════════════════════════════════════ */
+
+    .dashboard-container {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      min-height: calc(100vh - 48px);
+      width: 100%;
+    }
+
+    /* ── Theme toggle button ────────────────────────────────────── */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid var(--platinum-silver);
+      background: var(--pure-white);
+      color: var(--charcoal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+    }
+    .theme-toggle:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px) !important;
+    }
+
+    /* ── Welcome Banner ─────────────────────────────────────────── */
+    .welcome-banner {
+      background: linear-gradient(to right, var(--frost-gray), var(--pure-white), var(--pure-white));
+      padding: 24px 32px;
+      border-radius: 16px;
+      border: 1px solid var(--platinum-silver);
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      cursor: default;
+      transition: all 0.3s ease;
+    }
+    .welcome-banner:hover {
+      transform: scale(1.01);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .welcome-title {
+      font-size: clamp(1.25rem, 3vw, 1.875rem);
+      font-weight: 900;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+    }
+
+    .welcome-subtitle {
+      font-size: 11px;
+      color: var(--slate-gray);
+      line-height: 1.6;
+      max-width: 640px;
+      margin-top: 4px;
+    }
+
+    .department-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--pure-white);
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--platinum-silver);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--charcoal);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      margin-top: 12px;
+      transition: all 0.3s ease;
+    }
+    .department-badge:hover {
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: var(--approved);
+      animation: pulse-ring 2.5s ease-in-out infinite;
+    }
+
+    /* ── Scorecard Grid ─────────────────────────────────────────── */
+    .scorecard-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    @media (min-width: 1024px) {
+      .scorecard-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .scorecard {
+      background: var(--pure-white);
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--platinum-silver);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-align: left;
+      transition: all 0.3s ease;
+      animation: count-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .scorecard:nth-child(1) { animation-delay: 0.1s; }
+    .scorecard:nth-child(2) { animation-delay: 0.2s; }
+    .scorecard:nth-child(3) { animation-delay: 0.3s; }
+    .scorecard:nth-child(4) { animation-delay: 0.4s; }
+
+    .scorecard:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      border-color: var(--brushed-silver);
+    }
+
+    .scorecard-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    .scorecard-value {
+      font-size: 1.5rem;
+      font-weight: 900;
+      font-family: "SF Mono", "Fira Code", monospace;
+      margin-top: 4px;
+    }
+
+    .label-approved { color: var(--approved); }
+    .label-rejected { color: var(--rejected); }
+    .label-pending  { color: var(--pending); }
+    .label-total    { color: var(--slate-gray); }
+    .value-approved { color: var(--approved); }
+    .value-rejected { color: var(--rejected); }
+    .value-pending  { color: var(--pending); }
+    .value-total    { color: var(--charcoal); }
+
+    /* ── Chart Cards ────────────────────────────────────────────── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      flex: 1;
+      min-height: 400px;
+    }
+    @media (min-width: 1024px) {
+      .charts-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .chart-card {
+      background: var(--pure-white);
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid var(--platinum-silver);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s ease;
+    }
+    .chart-card:hover {
+      transform: scale(1.015);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      border-color: var(--brushed-silver);
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .chart-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--charcoal);
+    }
+    .chart-subtitle {
+      font-size: 11px;
+      color: var(--slate-gray);
+      margin-top: 2px;
+    }
+
+    .chart-badge {
+      font-size: 10px;
+      background: var(--frost-gray);
+      color: var(--charcoal);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: 1px solid var(--platinum-silver);
+    }
+
+    /* Metric badges row */
+    .metric-badges {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+      background: var(--frost-gray);
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(220, 223, 228, 0.4);
+    }
+
+    .metric-item {
+      text-align: center;
+    }
+    .metric-item:not(:last-child) {
+      border-right: 1px solid rgba(220, 223, 228, 0.6);
+    }
+
+    .metric-label {
+      display: block;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 800;
+      color: var(--charcoal);
+    }
+    .metric-value {
+      font-size: 1.125rem;
+      font-weight: 900;
+      color: var(--approved-deep);
+    }
+
+    .chart-container {
+      flex: 1;
+      min-height: 280px;
+      position: relative;
+    }
+
+    /* Pie chart layout */
+    .pie-layout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      flex: 1;
+    }
+    @media (min-width: 768px) {
+      .pie-layout {
+        flex-direction: row;
+      }
+    }
+
+    .pie-container {
+      width: 100%;
+      max-width: 280px;
+      position: relative;
+    }
+    .pie-center-label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: none;
+    }
+    .pie-center-number {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--charcoal);
+      line-height: 1;
+    }
+    .pie-center-text {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 800;
+      color: var(--slate-gray);
+      margin-top: 4px;
+    }
+
+    /* Legend list */
+    .legend-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .legend-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--frost-gray);
+    }
+    .legend-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .legend-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .legend-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    .legend-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--charcoal);
+    }
+    .legend-value {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--charcoal);
+      background: var(--frost-gray);
+      padding: 4px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--platinum-silver);
+      font-family: "SF Mono", "Fira Code", monospace;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+    .legend-pct {
+      font-size: 10px;
+      color: var(--slate-gray);
+      font-weight: 500;
+      margin-left: 4px;
+    }
+
+    /* Year selector */
+    .year-select {
+      font-size: 10px;
+      background: var(--frost-gray);
+      color: var(--charcoal);
+      padding: 4px 24px 4px 10px;
+      border-radius: 6px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: 1px solid var(--platinum-silver);
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23334155' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+      background-position: right 0.4rem center;
+      background-size: 1.1em 1.1em;
+      background-repeat: no-repeat;
+    }
+    .dark .year-select {
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+    }
+
+    /* ── Responsive chart heights ──────────────────────────────── */
+    @media (max-width: 639px) {
+      .chart-container { min-height: 220px; }
+    }
+    @media (min-width: 640px) {
+      .chart-container { min-height: 280px; }
+    }
+    @media (min-width: 1440px) {
+      .chart-container { min-height: 340px; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Theme Toggle Button -->
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark/light mode">
+    🌙
+  </button>
+
+  <div class="dashboard-container">
+
+    <!-- ═══════════════════════════════════════════════════════════
+         1. WELCOME BANNER — with text-shine + neon-grey glow
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="welcome-banner animate-fade-in neon-grey-glow">
+      <div style="position: relative; z-index: 10;">
+        <h1 class="welcome-title text-shine">
+          Welcome back, Dr. S. Vignesh!
+        </h1>
+        <p class="welcome-subtitle">
+          Manage institutional publications, review submissions, delegate evaluations, and monitor research output — all from your admin command centre.
+        </p>
+      </div>
+      <div class="department-badge">
+        <span class="status-dot"></span>
+        <span>Department: <strong>Office of Dean (Research)</strong></span>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         2. SCORECARD CARDS — with hover-scale + count-up animation
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="scorecard-grid animate-fade-in">
+      <!-- Total Submissions -->
+      <div class="scorecard">
+        <span class="scorecard-label label-approved">Total Submissions</span>
+        <span class="scorecard-value value-approved" id="statTotal">24</span>
+      </div>
+      <!-- Approved -->
+      <div class="scorecard">
+        <span class="scorecard-label label-approved">Approved</span>
+        <span class="scorecard-value value-approved" id="statApproved">14</span>
+      </div>
+      <!-- Pending Review -->
+      <div class="scorecard">
+        <span class="scorecard-label label-pending">Pending Review</span>
+        <span class="scorecard-value value-pending" id="statPending">6</span>
+      </div>
+      <!-- Rejected -->
+      <div class="scorecard">
+        <span class="scorecard-label label-rejected">Rejected</span>
+        <span class="scorecard-value value-rejected" id="statRejected">4</span>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         3. CHARTS SECTION — Bar chart + Doughnut with legends
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="charts-grid">
+
+      <!-- Monthly Submission Trend (Bar + Area via Chart.js) -->
+      <div class="chart-card animate-fade-in animate-delay-1">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Monthly Submission Trend</div>
+            <div class="chart-subtitle">Total submissions by month (All Departments)</div>
+          </div>
+          <select class="year-select" id="yearSelect">
+            <option value="2026">Current Year (2026)</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+            <option value="all">All Years</option>
+          </select>
+        </div>
+
+        <!-- Metric Badges -->
+        <div class="metric-badges">
+          <div class="metric-item">
+            <span class="metric-label">Total Submissions</span>
+            <span class="metric-value" id="metricTotal">24</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Active Months</span>
+            <span class="metric-value" id="metricActiveMonths">6</span>
+          </div>
+          <div class="metric-item">
+            <span class="metric-label">Peak Month</span>
+            <span class="metric-value" id="metricPeakMonth">Mar</span>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Publication Status Doughnut -->
+      <div class="chart-card animate-fade-in animate-delay-2">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Publication Portfolio Status</div>
+            <div class="chart-subtitle">Status of all submitted manuscripts</div>
+          </div>
+          <span class="chart-badge">Live Distribution</span>
+        </div>
+
+        <div class="pie-layout">
+          <div class="pie-container">
+            <canvas id="doughnutChart"></canvas>
+            <div class="pie-center-label">
+              <div class="pie-center-number" id="pieCenterTotal">24</div>
+              <div class="pie-center-text">Total Papers</div>
+            </div>
+          </div>
+
+          <div class="legend-list" id="legendList">
+            <!-- Legends are injected by JS -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // MOCK DATA — Replace with your real data source
+    // ═══════════════════════════════════════════════════════════════
+    const MOCK_DATA = {
+      approved: 14,
+      pending: 6,
+      rejected: 4,
+      total: 24,
+      // Monthly submissions (Jan–Jun)
+      monthly: [2, 3, 7, 4, 5, 3],
+      months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // THEME TOGGLE
+    // ═══════════════════════════════════════════════════════════════
+    const themeBtn = document.getElementById('themeToggle');
+    const savedTheme = localStorage.getItem('admin-dashboard-theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      themeBtn.textContent = '☀️';
+    }
+
+    themeBtn.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      themeBtn.textContent = isDark ? '☀️' : '🌙';
+      localStorage.setItem('admin-dashboard-theme', isDark ? 'dark' : 'light');
+      // Rebuild charts with updated colors
+      buildBarChart();
+      buildDoughnutChart();
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // ANIMATED COUNTER — counts up from 0 to target value
+    // ═══════════════════════════════════════════════════════════════
+    function animateCounter(el, target, duration = 800) {
+      let start = 0;
+      const startTime = performance.now();
+      function step(now) {
+        const progress = Math.min((now - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+        el.textContent = Math.round(eased * target);
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    // Animate all scorecard values on load
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        animateCounter(document.getElementById('statTotal'), MOCK_DATA.total);
+        animateCounter(document.getElementById('statApproved'), MOCK_DATA.approved);
+        animateCounter(document.getElementById('statPending'), MOCK_DATA.pending);
+        animateCounter(document.getElementById('statRejected'), MOCK_DATA.rejected);
+      }, 400);
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    // BAR CHART (Monthly Submission Trend)
+    // ═══════════════════════════════════════════════════════════════
+    let barChartInstance = null;
+
+    function getChartColors() {
+      const isDark = document.documentElement.classList.contains('dark');
+      return {
+        gridColor: isDark ? '#2e3748' : '#E2E5E9',
+        labelColor: isDark ? '#94a3b8' : '#6B7281',
+        tooltipBg: '#1E293B',
+      };
+    }
+
+    function buildBarChart() {
+      const ctx = document.getElementById('barChart').getContext('2d');
+      const colors = getChartColors();
+
+      if (barChartInstance) barChartInstance.destroy();
+
+      // Gradient fill for bars
+      const grad = ctx.createLinearGradient(0, 0, 0, 300);
+      grad.addColorStop(0, '#10B981');
+      grad.addColorStop(1, '#047857');
+
+      barChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: MOCK_DATA.months,
+          datasets: [{
+            label: 'Submissions',
+            data: MOCK_DATA.monthly,
+            backgroundColor: grad,
+            borderRadius: 6,
+            borderSkipped: false,
+            barThickness: 28,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            duration: 1200,
+            easing: 'easeOutQuart',
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: colors.tooltipBg,
+              titleColor: '#FFF',
+              bodyColor: '#FFF',
+              cornerRadius: 8,
+              titleFont: { size: 11, weight: 'bold' },
+              bodyFont: { size: 11 },
+              padding: 10,
+            },
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: colors.labelColor, font: { size: 11 } },
+              border: { display: false },
+            },
+            y: {
+              grid: { color: colors.gridColor, drawBorder: false },
+              ticks: {
+                color: colors.labelColor,
+                font: { size: 11 },
+                stepSize: 1,
+                callback: (v) => Number.isInteger(v) ? v : '',
+              },
+              border: { display: false },
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // DOUGHNUT CHART (Publication Portfolio Status)
+    // ═══════════════════════════════════════════════════════════════
+    let doughnutInstance = null;
+
+    function buildDoughnutChart() {
+      const ctx = document.getElementById('doughnutChart').getContext('2d');
+
+      if (doughnutInstance) doughnutInstance.destroy();
+
+      const data = [
+        { name: 'Approved',       value: MOCK_DATA.approved, color: '#16A34A' },
+        { name: 'Pending Review', value: MOCK_DATA.pending,  color: '#F59E0B' },
+        { name: 'Rejected',       value: MOCK_DATA.rejected, color: '#DC2626' },
+      ].filter(d => d.value > 0);
+
+      doughnutInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: data.map(d => d.name),
+          datasets: [{
+            data: data.map(d => d.value),
+            backgroundColor: data.map(d => d.color),
+            borderWidth: 0,
+            spacing: 4,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          cutout: '68%',
+          animation: {
+            animateRotate: true,
+            duration: 1200,
+            easing: 'easeOutQuart',
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1E293B',
+              titleColor: '#FFF',
+              bodyColor: '#FFF',
+              cornerRadius: 8,
+              titleFont: { size: 11, weight: 'bold' },
+              bodyFont: { size: 11 },
+              padding: 10,
+            },
+          },
+        },
+      });
+
+      // Build legend
+      const legendEl = document.getElementById('legendList');
+      legendEl.innerHTML = data.map(d => {
+        const pct = Math.round((d.value / MOCK_DATA.total) * 100);
+        return `
+          <div class="legend-row">
+            <div class="legend-left">
+              <span class="legend-dot" style="background-color: ${d.color};"></span>
+              <span class="legend-name">${d.name}</span>
+            </div>
+            <span class="legend-value">${d.value} <span class="legend-pct">(${pct}%)</span></span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INITIALIZE
+    // ═══════════════════════════════════════════════════════════════
+    window.addEventListener('DOMContentLoaded', () => {
+      buildBarChart();
+      buildDoughnutChart();
+
+      // Update metrics
+      const activeMonths = MOCK_DATA.monthly.filter(v => v > 0).length;
+      const peakIdx = MOCK_DATA.monthly.indexOf(Math.max(...MOCK_DATA.monthly));
+      document.getElementById('metricTotal').textContent = MOCK_DATA.total;
+      document.getElementById('metricActiveMonths').textContent = activeMonths;
+      document.getElementById('metricPeakMonth').textContent = MOCK_DATA.months[peakIdx];
+      document.getElementById('pieCenterTotal').textContent = MOCK_DATA.total;
+    });
+  </script>
+</body>
+</html>
