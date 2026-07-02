@@ -10,11 +10,10 @@ import { downloadFile, getFileUrl } from '../../fileStore';
 export const PublicationsPage = ({
   currentUser,
   publications,
-  selectedPubId,
-  setSelectedPubId,
   onReupload,
   onPayToUnlock,
 }) => {
+  const [selectedPubId, setSelectedPubId] = useState(null);
   const [fSearchText, setFSearchText] = useState('');
   const [fStatusFilter, setFStatusFilter] = useState('All');
   const [isFacultySearchExpanded, setIsFacultySearchExpanded] = useState(false);
