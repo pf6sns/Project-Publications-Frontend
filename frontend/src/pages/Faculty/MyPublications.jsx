@@ -176,10 +176,10 @@ export const PublicationsPage = ({
                         <td className="p-4 text-center">
                           <button
                             onClick={() => setSelectedPubId(pub.id)}
-                            className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg shadow-sm font-sans flex items-center space-x-1 cursor-pointer transition-all active:scale-95 mx-auto"
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-pure-white border border-platinum-silver text-slate-gray hover:text-emerald-500 hover:border-emerald-200 hover:shadow-xs hover:bg-emerald-50 transition-all focus:outline-none mx-auto cursor-pointer"
+                            title="View Publication"
                           >
-                            <Eye className="h-3 w-3" />
-                            <span>View</span>
+                            <Eye className="w-4 h-4" />
                           </button>
                         </td>
                       </tr>
@@ -271,8 +271,14 @@ export const PublicationsPage = ({
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                        <div className="flex flex-col gap-1 text-[10px] text-slate-400 font-mono">
                           <span>Uploaded Date: {new Date(v.uploadDate).toLocaleDateString()}</span>
+                          {v.reviewDate && (
+                            <>
+                              <span>Reviewed Date: {new Date(v.reviewDate).toLocaleDateString()}</span>
+                              <span>Reviewed By: {target.assignedReviewerId ? 'Admin' : 'System Admin'}</span>
+                            </>
+                          )}
                         </div>
 
                         {/* Download Slots Stacking Vertically */}
