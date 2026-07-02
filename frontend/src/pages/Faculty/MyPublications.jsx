@@ -235,39 +235,41 @@ export const PublicationsPage = ({
                 </h3>
 
                 {/* Faculty Name Prominently Displayed & Dates */}
-                <div className="pt-4 pb-2 space-y-2 border-t border-slate-200 text-xs font-semibold text-slate-600 flex flex-col items-start">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Faculty Author:</span>
-                    <span className="text-slate-800 font-extrabold">{target.author}</span>
+                <div className="pt-4 pb-2 border-t border-slate-200 text-xs font-semibold text-slate-600 flex flex-col items-center">
+                  <div className="flex flex-col space-y-2 items-start">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Faculty Author:</span>
+                      <span className="text-slate-800 font-extrabold">{target.author}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Date of Submission:</span>
+                      <span className="text-slate-800 font-extrabold">
+                        {new Date(target.submissionDate).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </span>
+                    </div>
+                    {(() => {
+                      const v = target.versions[target.versions.length - 1];
+                      if (!v || !v.reviewDate) return null;
+                      return (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Date Reviewed:</span>
+                          <span className="text-slate-800 font-extrabold">
+                            {new Date(v.reviewDate).toLocaleDateString('en-US', {
+                              weekday: 'long',
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </span>
+                        </div>
+                      );
+                    })()}
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Date of Submission:</span>
-                    <span className="text-slate-800 font-extrabold">
-                      {new Date(target.submissionDate).toLocaleDateString('en-US', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </span>
-                  </div>
-                  {(() => {
-                    const v = target.versions[target.versions.length - 1];
-                    if (!v || !v.reviewDate) return null;
-                    return (
-                      <div className="flex items-center space-x-2">
-                        <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Date Reviewed:</span>
-                        <span className="text-slate-800 font-extrabold">
-                          {new Date(v.reviewDate).toLocaleDateString('en-US', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </span>
-                      </div>
-                    );
-                  })()}
                 </div>
 
                 {/* Downloads Section Division */}
