@@ -10,7 +10,8 @@ import {
   AlertCircle, 
   CheckCircle2,
   Lock,
-  FileText
+  FileText,
+  Check
 } from 'lucide-react';
 
 const PAGES = [
@@ -156,46 +157,38 @@ export function GrantAssessorModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-charcoal/60 dark:bg-black/60 backdrop-blur-sm animate-fade-in p-4 overflow-y-auto">
-      <div className="w-full max-w-xl overflow-hidden bg-pure-white dark:bg-charcoal-gray rounded-2xl border border-platinum-silver dark:border-brushed-silver shadow-2xl animate-scale-in my-8 max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm animate-fade-in" onClick={onClose} />
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-visible relative z-10 animate-scale-in flex flex-col max-h-[90vh]">
         
         {/* Header */}
-        <div className="p-5 flex items-center justify-between text-left text-pure-white dark:text-snow-white bg-charcoal dark:bg-graphite shrink-0">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-white/10 rounded-lg">
-              <ShieldCheck className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h3 className="font-extrabold text-sm uppercase tracking-wider text-pure-white dark:text-snow-white">
-                Assign Granular Access
-              </h3>
-              <p className="text-[11px] text-platinum-silver dark:text-stone-gray mt-0.5">
-                Target: <span className="font-bold underline text-pure-white dark:text-snow-white">{facultyUser.name}</span> ({facultyUser.department})
-              </p>
-            </div>
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 rounded-t-2xl">
+          <div className="flex items-center space-x-2">
+            <ShieldCheck className="h-5 w-5 text-emerald-600" />
+            <h2 className="text-lg font-bold text-slate-800">Assign Granular Access</h2>
           </div>
-          <button onClick={onClose} className="text-pure-white/80 dark:text-snow-white/80 hover:text-pure-white dark:hover:text-snow-white hover:bg-white/10 dark:hover:bg-white/10 p-1.5 rounded-lg transition-colors cursor-pointer">
-            <X className="h-4.5 w-4.5" />
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-200">
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Scrollable Content */}
-        <div className="p-6 space-y-6 overflow-y-auto flex-1 relative">
+        <div className="p-6 space-y-4 overflow-y-auto custom-scrollbar">
           
           {showConstraintPrompt && (
-            <div className="absolute top-4 left-6 right-6 bg-pure-white dark:bg-charcoal-gray border border-platinum-silver dark:border-brushed-silver p-4 rounded-xl shadow-2xl z-10 animate-fade-in text-left">
+            <div className="bg-white border border-slate-200 p-4 rounded-xl shadow-lg animate-fade-in text-left mb-4">
               <div className="flex space-x-3">
-                <AlertCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-500 shrink-0 mt-0.5" />
+                <AlertCircle className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-black text-charcoal dark:text-snow-white tracking-wide uppercase">Page Access Required</h4>
-                  <p className="text-xs text-slate-gray dark:text-stone-gray mt-1">
-                    The <strong className="font-bold text-charcoal dark:text-snow-white">{showConstraintPrompt.feature.label}</strong> feature requires access to the <strong className="font-bold text-charcoal dark:text-snow-white">{showConstraintPrompt.requiredPage.label}</strong> page. Do you want to automatically check this page and proceed?
+                  <h4 className="text-sm font-bold text-slate-800 tracking-wide">Page Access Required</h4>
+                  <p className="text-xs text-slate-500 mt-1">
+                    The <strong className="font-bold text-slate-700">{showConstraintPrompt.feature.label}</strong> feature requires access to the <strong className="font-bold text-slate-700">{showConstraintPrompt.requiredPage.label}</strong> page. Do you want to automatically check this page and proceed?
                   </p>
                   <div className="mt-4 flex space-x-3">
-                    <button onClick={confirmConstraint} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600 text-pure-white dark:text-snow-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-sm">
+                    <button onClick={confirmConstraint} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer shadow-sm">
                       Yes, grant both
                     </button>
-                    <button onClick={cancelConstraint} className="px-4 py-2 bg-frost-gray dark:bg-gunmetal-gray hover:bg-mist-silver dark:hover:bg-titanium-gray text-charcoal dark:text-snow-white border border-platinum-silver dark:border-brushed-silver text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-sm">
+                    <button onClick={cancelConstraint} className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-600 border border-slate-300 text-xs font-semibold rounded-lg transition-colors cursor-pointer shadow-sm">
                       Cancel
                     </button>
                   </div>
@@ -204,70 +197,72 @@ export function GrantAssessorModal({
             </div>
           )}
 
-          <div className={`transition-opacity duration-300 ${showConstraintPrompt ? 'opacity-30 pointer-events-none' : 'opacity-100'}`}>
-            <p className="text-sm text-slate-gray dark:text-stone-gray mb-6 text-left">
-              Select the specific pages and features you want to grant to this faculty member. Checking a feature will enforce required page access.
-            </p>
-
-            {/* Pages Section */}
-            <div className="mb-6">
-              <h4 className="text-xs font-extrabold uppercase tracking-widest text-charcoal dark:text-snow-white mb-3 flex items-center space-x-2 text-left">
-                <FileText className="h-3.5 w-3.5 text-steel-gray dark:text-titanium-gray" />
-                <span>Pages Access</span>
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {PAGES.map(page => (
-                  <label key={page.id} className={`flex items-center space-x-3 p-3 rounded-xl border transition-all cursor-pointer select-none ${selectedPages.includes(page.id) ? 'border-emerald-500 dark:border-emerald-600 bg-emerald-50/30 dark:bg-emerald-900/30' : 'border-platinum-silver dark:border-brushed-silver hover:border-mist-silver dark:hover:border-stone-gray hover:bg-arctic-white dark:hover:bg-graphite'}`}>
-                    <input 
-                      type="checkbox" 
-                      className="form-checkbox h-4 w-4 text-emerald-600 dark:text-emerald-500 rounded border-mist-silver dark:border-stone-gray focus:ring-emerald-500 dark:focus:ring-emerald-400 cursor-pointer"
-                      checked={selectedPages.includes(page.id)}
-                      onChange={() => handleTogglePage(page.id)}
-                    />
-                    <span className={`text-sm font-semibold ${selectedPages.includes(page.id) ? 'text-emerald-900 dark:text-emerald-400' : 'text-slate-gray dark:text-stone-gray'}`}>
-                      {page.label}
-                    </span>
-                  </label>
-                ))}
-              </div>
+          <div className={`transition-opacity duration-300 ${showConstraintPrompt ? 'opacity-30 pointer-events-none' : 'opacity-100'} space-y-4`}>
+            
+            <div className="text-sm text-slate-500 flex flex-col gap-1">
+              <p>Target: <span className="font-bold text-slate-700">{facultyUser.name}</span> ({facultyUser.department})</p>
+              <p>Select the specific pages and features you want to grant to this faculty member. Checking a feature will enforce required page access.</p>
             </div>
 
-            {/* Features Section */}
-            <div>
-              <h4 className="text-xs font-extrabold uppercase tracking-widest text-charcoal dark:text-snow-white mb-3 flex items-center space-x-2 text-left">
-                <Lock className="h-3.5 w-3.5 text-steel-gray dark:text-titanium-gray" />
-                <span>Specific Features</span>
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {FEATURES.map(feature => (
-                  <label key={feature.id} className={`flex items-center space-x-3 p-3 rounded-xl border transition-all cursor-pointer select-none ${selectedFeatures.includes(feature.id) ? 'border-blue-500 dark:border-blue-600 bg-blue-50/30 dark:bg-blue-900/30' : 'border-platinum-silver dark:border-brushed-silver hover:border-mist-silver dark:hover:border-stone-gray hover:bg-arctic-white dark:hover:bg-graphite'}`}>
-                    <input 
-                      type="checkbox" 
-                      className="form-checkbox h-4 w-4 text-blue-600 dark:text-blue-500 rounded border-mist-silver dark:border-stone-gray focus:ring-blue-500 dark:focus:ring-blue-400 cursor-pointer"
-                      checked={selectedFeatures.includes(feature.id)}
-                      onChange={() => handleToggleFeature(feature)}
-                    />
-                    <div className="flex flex-col text-left">
-                      <span className={`text-sm font-semibold ${selectedFeatures.includes(feature.id) ? 'text-blue-900 dark:text-blue-400' : 'text-slate-gray dark:text-stone-gray'}`}>
-                        {feature.label}
+            <div className="bg-slate-50 rounded-xl border border-slate-200 overflow-visible p-4 space-y-4 text-left">
+              {/* Pages Section */}
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 ml-0.5">
+                  Pages Access
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">
+                  {PAGES.map(page => (
+                    <label key={page.id} className="flex items-center gap-2.5 cursor-pointer group">
+                      <input 
+                        type="checkbox" 
+                        className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer accent-emerald-600 shrink-0"
+                        checked={selectedPages.includes(page.id)}
+                        onChange={() => handleTogglePage(page.id)}
+                      />
+                      <span className="text-sm text-slate-700 group-hover:text-slate-900 leading-tight">
+                        {page.label}
                       </span>
-                      <span className="text-[10px] text-slate-gray dark:text-stone-gray">
-                        Requires: {PAGES.find(p => p.id === feature.requiredPage)?.label}
-                      </span>
-                    </div>
-                  </label>
-                ))}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Features Section */}
+              <div className="pt-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 ml-0.5">
+                  Specific Features
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">
+                  {FEATURES.map(feature => (
+                    <label key={feature.id} className="flex items-start gap-2.5 cursor-pointer group">
+                      <input 
+                        type="checkbox" 
+                        className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer accent-emerald-600 shrink-0 mt-0.5"
+                        checked={selectedFeatures.includes(feature.id)}
+                        onChange={() => handleToggleFeature(feature)}
+                      />
+                      <div className="flex flex-col text-left">
+                        <span className="text-sm text-slate-700 group-hover:text-slate-900 leading-tight">
+                          {feature.label}
+                        </span>
+                        <span className="text-[10px] text-slate-400 mt-0.5">
+                          Requires: {PAGES.find(p => p.id === feature.requiredPage)?.label}
+                        </span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Footer Actions */}
-        <div className="p-5 border-t border-platinum-silver dark:border-brushed-silver bg-arctic-white dark:bg-graphite shrink-0 flex justify-end space-x-3">
+        <div className="p-5 bg-slate-50 border-t border-slate-100 flex items-center justify-end space-x-3 rounded-b-2xl">
           <button 
             type="button" 
             onClick={onClose}
-            className="px-4 py-2 text-sm font-bold text-charcoal dark:text-snow-white bg-frost-gray dark:bg-gunmetal-gray border border-platinum-silver dark:border-brushed-silver rounded-lg hover:bg-mist-silver dark:hover:bg-titanium-gray transition-colors cursor-pointer shadow-sm"
+            className="px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 transition-all active:scale-95 cursor-pointer"
           >
             Cancel
           </button>
@@ -275,9 +270,10 @@ export function GrantAssessorModal({
             type="button" 
             onClick={handleConfirmGrants}
             disabled={!!showConstraintPrompt || (selectedPages.length === 0 && selectedFeatures.length === 0)}
-            className="px-5 py-2 text-sm font-bold text-pure-white dark:text-snow-white bg-charcoal dark:bg-gunmetal-gray border border-transparent rounded-lg hover:bg-slate-gray dark:hover:bg-titanium-gray transition-colors cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-lg shadow-sm hover:bg-emerald-700 flex items-center space-x-2 transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Confirm & Assign
+            <Check className="h-4 w-4" />
+            <span>Confirm & Assign</span>
           </button>
         </div>
         
