@@ -6,7 +6,7 @@
 import React from 'react';
 import { ShieldCheck, X } from 'lucide-react';
 
-export const AdminDelegationPage = ({
+export const AssignAccessPage = ({
   currentUser,
   users,
   grantTemporaryAdmin,

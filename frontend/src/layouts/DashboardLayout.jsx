@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 import { SessionModal, LogoutConfirmationModal } from '../components/auth/index';
-import { GrantAssessorModal } from '../components/delegateReview/AssignAccessModal';
+import { GrantAssessorModal } from '../components/assignAccess/AssignAccessModal';
 import { ThemeToggle } from '../components/common/ThemeToggle';
 import snsLogo from '../assets/logos/sns-logo.png';
 
@@ -103,7 +103,7 @@ export default function DashboardLayout() {
     if (path.includes('/queue')) return 'Submissions Queue';
     if (path.includes('/evaluation')) return 'Evaluation Console';
     if (path.includes('/statistics')) return 'Institution Stats';
-    if (path.includes('/delegation')) return 'Assign Access';
+    if (path.includes('/assign-access')) return 'Assign Access';
     if (path.includes('/upload')) return 'Upload Manuscript';
     if (path.includes('/publications')) return 'My Publications';
     if (path.includes('/profile')) return 'Profile';
@@ -143,7 +143,7 @@ export default function DashboardLayout() {
                 {renderSidebarButton('/admin/queue', 'Submissions Queue', CheckSquare)}
                 {renderSidebarButton('/admin/upload', 'Upload Manuscript', Upload)}
                 {renderSidebarButton('/admin/publications', 'My Publications', BookOpen)}
-                {renderSidebarButton('/admin/delegation', 'Assign Access', ShieldCheck)}
+                {renderSidebarButton('/admin/assign-access', 'Assign Access', ShieldCheck)}
               </>
             )}
           </nav>
