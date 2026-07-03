@@ -28,6 +28,7 @@ let _cachedFacultyList = null;
 const generateMockFacultyList = () => {
   const baseFaculty = Object.values(mockUsers).filter(u => u.role === 'Faculty');
   const facultyList = [];
+  const insts = ['SNSCT', 'SNSCE', 'SNSRCAS', 'SNSCAHS'];
 
   for (let i = 1; i <= 50; i++) {
     const base = baseFaculty[i % baseFaculty.length] || baseFaculty[0];
@@ -39,6 +40,7 @@ const generateMockFacultyList = () => {
       name: `${base.name.split(' ')[0]} ${base.name.split(' ')[1]} ${i}`,
       publications: pubCount + (i % 5),
       originalId: base.id,
+      institution: insts[i % 4],
     });
   }
   return facultyList;
@@ -55,9 +57,10 @@ const generateMockFacultyList = () => {
  * @param {number} page
  * @param {number} limit
  * @param {string} searchQuery
+ * @param {string[]} institutionFilters
  * @returns {{ data: object[], total: number, page: number, limit: number, totalPages: number }}
  */
-export const fetchFacultyList = async (page = 1, limit = 20, searchQuery = '') => {
+export const fetchFacultyList = async (page = 1, limit = 20, searchQuery = '', institutionFilters = ['All Institutions']) => {
   await simulateNetwork(600);
 
   if (!_cachedFacultyList) {
@@ -65,6 +68,10 @@ export const fetchFacultyList = async (page = 1, limit = 20, searchQuery = '') =
   }
 
   let filtered = _cachedFacultyList;
+
+  if (!institutionFilters.includes('All Institutions')) {
+    filtered = filtered.filter(f => institutionFilters.includes(f.institution));
+  }
 
   if (searchQuery) {
     const lowerQuery = searchQuery.toLowerCase();

@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { X, Download, FileSpreadsheet } from 'lucide-react';
-import { exportToXlsx } from '../../utils/exportXlsx';
+import { exportToXlsx } from '../utils/exportXlsx';
 import { SearchableDropdown } from './SearchableDropdown';
 
 const INSTITUTION_OPTIONS = [
@@ -35,7 +35,7 @@ export const ExportModal = ({ isOpen, onClose, publications }) => {
   const [selectedFields, setSelectedFields] = useState(
     AVAILABLE_FIELDS.reduce((acc, field) => ({ ...acc, [field.id]: true }), {})
   );
-  const [exportInstitution, setExportInstitution] = useState('All Institutions');
+  const [exportInstitution, setExportInstitution] = useState(['All Institutions']);
 
   const isAllSelected = Object.values(selectedFields).every(Boolean);
   const isIndeterminate = !isAllSelected && Object.values(selectedFields).some(Boolean);
@@ -51,7 +51,7 @@ export const ExportModal = ({ isOpen, onClose, publications }) => {
 
   const handleExport = () => {
     const filteredPublications = publications.filter(p => {
-      if (exportInstitution === 'All Institutions') return true;
+      if (exportInstitution.includes('All Institutions')) return true;
       let pubInstitution = p.institution;
       if (!pubInstitution) {
         const hash = p.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -61,7 +61,7 @@ export const ExportModal = ({ isOpen, onClose, publications }) => {
         else if (mod === 2) pubInstitution = 'SNSRCAS';
         else pubInstitution = 'SNSCAHS';
       }
-      return pubInstitution === exportInstitution;
+      return exportInstitution.includes('All Institutions') || exportInstitution.includes(pubInstitution);
     });
 
     if (filteredPublications.length === 0) {
@@ -146,15 +146,15 @@ export const ExportModal = ({ isOpen, onClose, publications }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm animate-fade-in" onClick={onClose} />
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-visible relative z-10 animate-scale-in flex flex-col max-h-[90vh]">
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl w-full sm:max-w-xl overflow-visible relative z-10 animate-scale-in flex flex-col max-h-[92vh] sm:max-h-[90vh]">
 
         {/* Header */}
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 rounded-t-2xl">
+        <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 rounded-t-2xl shrink-0">
           <div className="flex items-center space-x-2">
-            <FileSpreadsheet className="h-5 w-5 text-emerald-600" />
-            <h2 className="text-lg font-bold text-slate-800">Export Dashboard Data</h2>
+            <FileSpreadsheet className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600" />
+            <h2 className="text-base sm:text-lg font-bold text-slate-800">Export Dashboard Data</h2>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-200">
             <X className="h-5 w-5" />
@@ -162,7 +162,7 @@ export const ExportModal = ({ isOpen, onClose, publications }) => {
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-4 overflow-y-auto custom-scrollbar">
+        <div className="p-4 sm:p-6 space-y-4 overflow-y-auto custom-scrollbar flex-1">
           <p className="text-sm text-slate-500">Select the college and fields to include in the Excel export:</p>
 
           <div className="bg-slate-50 rounded-xl border border-slate-200 overflow-visible">
@@ -191,6 +191,7 @@ export const ExportModal = ({ isOpen, onClose, publications }) => {
                   value={exportInstitution}
                   onChange={setExportInstitution}
                   placeholder="Select college"
+                  isMulti={true}
                 />
               </div>
             </div>
@@ -203,8 +204,8 @@ export const ExportModal = ({ isOpen, onClose, publications }) => {
                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 ml-0.5">
                     {group}
                   </p>
-                  {/* 2-column grid */}
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+                  {/* 1-col on mobile, 2-col on sm+ */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">
                     {AVAILABLE_FIELDS.filter(f => f.group === group).map(field => (
                       <label
                         key={field.id}
@@ -229,7 +230,7 @@ export const ExportModal = ({ isOpen, onClose, publications }) => {
         </div>
 
         {/* Footer */}
-        <div className="p-5 bg-slate-50 border-t border-slate-100 flex items-center justify-end space-x-3 rounded-b-2xl">
+        <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-100 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 sm:space-x-0 rounded-b-2xl shrink-0">
           <button
             onClick={onClose}
             className="px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50 transition-all active:scale-95 cursor-pointer"

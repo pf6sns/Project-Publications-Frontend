@@ -80,12 +80,12 @@ export function FacultyDashboardCharts({ publications, publicationStatuses }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Monthly Submission bar graph */}
-      <div className="bg-pure-white p-6 rounded-2xl border border-platinum-silver shadow-xs flex flex-col justify-between">
+      <div className="bg-pure-white p-4 sm:p-6 rounded-2xl border border-platinum-silver shadow-xs flex flex-col justify-between min-w-0">
         <div>
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex flex-wrap justify-between items-start gap-2 mb-4">
             <div>
               <h3 className="font-bold text-charcoal text-sm">Monthly Submission Trend</h3>
-              <p className="text-[11px] text-slate-gray">
+              <p className="text-[10px] sm:text-[11px] text-slate-gray">
                 Total uploads by month ({selectedYear === 'All' ? 'All Years' : selectedYear})
               </p>
             </div>
@@ -108,18 +108,18 @@ export function FacultyDashboardCharts({ publications, publicationStatuses }) {
           </div>
 
           {/* Dynamic Metric Badges to make it easily understandable */}
-          <div className="grid grid-cols-3 gap-3 mb-6 bg-slate-50 p-3 rounded-xl border border-platinum-silver/40">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6 bg-slate-50 p-2 sm:p-3 rounded-xl border border-platinum-silver/40">
             <div className="text-center">
-              <span className="block text-[9px] uppercase tracking-wider text-slate-900 font-extrabold">Total Submissions</span>
-              <span className="text-lg font-black text-emerald-800">{filteredPubsForYear.length}</span>
+              <span className="block text-[8px] sm:text-[9px] uppercase tracking-wider text-slate-900 font-extrabold leading-tight">Total Submissions</span>
+              <span className="text-base sm:text-lg font-black text-emerald-800">{filteredPubsForYear.length}</span>
             </div>
             <div className="text-center border-x border-slate-200/60">
-              <span className="block text-[9px] uppercase tracking-wider text-slate-900 font-extrabold">Active Months</span>
-              <span className="text-lg font-black text-emerald-800">{monthlyTrendData.filter(d => d.count > 0).length}</span>
+              <span className="block text-[8px] sm:text-[9px] uppercase tracking-wider text-slate-900 font-extrabold leading-tight">Active Months</span>
+              <span className="text-base sm:text-lg font-black text-emerald-800">{monthlyTrendData.filter(d => d.count > 0).length}</span>
             </div>
             <div className="text-center">
-              <span className="block text-[9px] uppercase tracking-wider text-slate-900 font-extrabold">Peak Month</span>
-              <span className="text-lg font-black text-emerald-800">
+              <span className="block text-[8px] sm:text-[9px] uppercase tracking-wider text-slate-900 font-extrabold leading-tight">Peak Month</span>
+              <span className="text-base sm:text-lg font-black text-emerald-800">
                 {filteredPubsForYear.length > 0 
                   ? monthlyTrendData.reduce((max, current) => current.count > max.count ? current : max, { month: 'None', count: -1 }).month
                   : 'None'}
@@ -157,7 +157,7 @@ export function FacultyDashboardCharts({ publications, publicationStatuses }) {
       </div>
 
       {/* Publication Status Pie Chart */}
-      <div className="bg-pure-white p-6 rounded-2xl border border-platinum-silver shadow-xs flex flex-col justify-between">
+      <div className="bg-pure-white p-4 sm:p-6 rounded-2xl border border-platinum-silver shadow-xs flex flex-col justify-between min-w-0">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h3 className="font-bold text-charcoal text-sm">Publication Portfolio Status</h3>
@@ -168,7 +168,7 @@ export function FacultyDashboardCharts({ publications, publicationStatuses }) {
           </span>
         </div>
         
-        <div className="h-auto md:h-90 w-full flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="h-auto w-full flex flex-col xl:flex-row items-center justify-between gap-6 min-w-0">
           {!hasData ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-slate-gray text-xs">
               <span>No submitted publications active.</span>
@@ -176,7 +176,7 @@ export function FacultyDashboardCharts({ publications, publicationStatuses }) {
           ) : (
             <>
               {/* Pie container */}
-              <div className="w-full md:w-1/2 h-55 md:h-full">
+              <div className="w-full xl:w-1/2 h-56 min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <defs>
@@ -193,8 +193,8 @@ export function FacultyDashboardCharts({ publications, publicationStatuses }) {
                       data={donutData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={60}
-                      outerRadius={85}
+                      innerRadius="60%"
+                      outerRadius="85%"
                       paddingAngle={4}
                       dataKey="value"
                     >
@@ -219,18 +219,18 @@ export function FacultyDashboardCharts({ publications, publicationStatuses }) {
               </div>
 
               {/* Legends */}
-              <div className="w-full md:w-1/2 space-y-4 pr-2 pl-2 md:pl-6 pb-4 md:pb-0">
+              <div className="w-full xl:w-1/2 space-y-4 pr-2 pl-2 xl:pl-6 pb-4 xl:pb-0 min-w-0">
                 {donutData.map((d, idx) => {
                   const pct = Math.round((d.value / publications.length) * 100) || 0;
                   return (
-                    <div key={idx} className="flex items-center justify-between border-b border-slate-100 pb-3 last:border-0 last:pb-0">
-                      <div className="flex items-center space-x-3">
+                    <div key={idx} className="flex items-center justify-between border-b border-slate-100 pb-3 last:border-0 last:pb-0 gap-2">
+                      <div className="flex items-center space-x-3 min-w-0 flex-1">
                         <span className="w-3.5 h-3.5 rounded-full shrink-0 border" style={{ backgroundColor: d.color, borderColor: 'rgba(0,0,0,0.05)' }} />
-                        <span className="text-xs font-semibold text-charcoal truncate max-w-31.25">
+                        <span className="text-xs font-semibold text-charcoal truncate">
                           {d.name}
                         </span>
                       </div>
-                      <span className="text-xs font-bold text-charcoal bg-frost-gray px-2.5 py-1 rounded-lg border border-platinum-silver font-mono shadow-2xs">
+                      <span className="text-xs font-bold text-charcoal bg-frost-gray px-2.5 py-1 rounded-lg border border-platinum-silver font-mono shadow-2xs shrink-0 whitespace-nowrap">
                         {d.value} <span className="text-[10px] text-slate-500 font-medium ml-1">({pct}%)</span>
                       </span>
                     </div>
@@ -261,7 +261,7 @@ export function AdminAnalyticsDashboardCharts({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Department comparisons */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm transition-all duration-300 hover:scale-[1.015] hover:shadow-md hover:border-slate-300">
+      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm transition-all duration-300 hover:scale-[1.015] hover:shadow-md hover:border-slate-300 min-w-0">
         <div className="mb-4">
           <h3 className="font-bold text-slate-800 text-sm">Submissions by Department</h3>
           <p className="text-[11px] text-slate-400">Manuscripts submitted per department</p>
@@ -285,13 +285,13 @@ export function AdminAnalyticsDashboardCharts({
       </div>
 
       {/* Global Status Distribution */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm transition-all duration-300 hover:scale-[1.015] hover:shadow-md hover:border-slate-300">
+      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm transition-all duration-300 hover:scale-[1.015] hover:shadow-md hover:border-slate-300 min-w-0">
         <div className="mb-4">
           <h3 className="font-bold text-slate-800 text-sm">Publication Status</h3>
           <p className="text-[11px] text-slate-400">Status of all submitted papers</p>
         </div>
 
-        <div className="h-auto md:h-64 w-full flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="h-auto w-full flex flex-col xl:flex-row items-center justify-between gap-6 min-w-0">
           {donutData.length === 0 ? (
             <div className="flex-1 text-center py-10 text-slate-400 text-xs text-mono italic">
               No submissions tracked in session
@@ -299,15 +299,15 @@ export function AdminAnalyticsDashboardCharts({
           ) : (
             <>
               {/* Pie center */}
-              <div className="w-full md:w-1/2 h-45 md:h-full">
+              <div className="w-full xl:w-1/2 h-48 min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={donutData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={45}
-                      outerRadius={65}
+                      innerRadius="55%"
+                      outerRadius="85%"
                       paddingAngle={4}
                       dataKey="value"
                     >
@@ -323,14 +323,14 @@ export function AdminAnalyticsDashboardCharts({
               </div>
 
               {/* Legends list */}
-              <div className="w-full md:w-1/2 space-y-3 pr-2 pl-2 md:pl-4 pb-4 md:pb-0">
+              <div className="w-full xl:w-1/2 space-y-3 pr-2 pl-2 xl:pl-4 pb-4 xl:pb-0 min-w-0">
                 {donutData.map((d, index) => (
-                  <div key={index} className="flex items-center justify-between pb-1.5 border-b border-slate-50 last:border-0 last:pb-0">
-                    <div className="flex items-center space-x-2">
+                  <div key={index} className="flex items-center justify-between pb-1.5 border-b border-slate-50 last:border-0 last:pb-0 gap-2">
+                    <div className="flex items-center space-x-2 min-w-0 flex-1">
                       <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                      <span className="text-xs font-semibold text-slate-600 truncate max-w-27.5">{d.name}</span>
+                      <span className="text-xs font-semibold text-slate-600 truncate">{d.name}</span>
                     </div>
-                    <span className="text-xs font-mono font-bold text-slate-900 bg-slate-50 px-1.5 py-0.5 rounded">
+                    <span className="text-xs font-mono font-bold text-slate-900 bg-slate-50 px-1.5 py-0.5 rounded shrink-0 whitespace-nowrap">
                       {d.value} ({Math.round((d.value / stats.total) * 100) || 0}%)
                     </span>
                   </div>
@@ -338,7 +338,7 @@ export function AdminAnalyticsDashboardCharts({
                 
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                   <span className="text-[10px] uppercase font-bold text-slate-400">Total Publications</span>
-                  <span className="text-xs font-bold text-slate-900 font-mono bg-slate-100 px-2 py-0.5 rounded">
+                  <span className="text-xs font-bold text-slate-900 font-mono bg-slate-100 px-2 py-0.5 rounded shrink-0">
                     {stats.total}
                   </span>
                 </div>

@@ -12,11 +12,11 @@ export function useFacultyList() {
     totalPages: 0
   });
 
-  const fetchFaculty = useCallback(async (page = 1, limit = 20, search = '') => {
+  const fetchFaculty = useCallback(async (page = 1, limit = 20, search = '', institutionFilters = ['All Institutions']) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await facultyService.getFacultyList(page, limit, search);
+      const response = await facultyService.getFacultyList(page, limit, search, institutionFilters);
       setData(response.data);
       setPagination({
         page: response.page,

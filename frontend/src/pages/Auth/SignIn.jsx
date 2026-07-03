@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../context/ThemeContext';
 import { Eye, EyeOff, Key, ArrowRight } from 'lucide-react';
-import snsLogo from '../../assets/logos/sns-logo.png';
+import snsLogo from '../../assets/logos/app-logo.png';
 
 /* ─── Floating orb decoration ─────────────────────────────────────────────── */
 function Orb({ className }) {
@@ -50,7 +50,7 @@ export default function SignIn() {
         className="absolute inset-0 transition-colors duration-700"
         style={{
           background: isDark
-            ? 'linear-gradient(135deg, #060b14 0%, #0f172a 40%, #1a0f3a 70%, #0c1220 100%)'
+            ? 'linear-gradient(135deg, #0a0a0a 0%, #121212 40%, #1a1a1a 70%, #0a0a0a 100%)'
             : 'linear-gradient(135deg, #e8edf5 0%, #dde4f0 40%, #e4e8f8 70%, #edf0fa 100%)',
         }}
       />
@@ -61,17 +61,17 @@ export default function SignIn() {
       {/* Animated orbs */}
       <Orb className={`w-120 h-120 -top-30 -left-20 animate-float-slow
         ${isDark
-          ? 'bg-indigo-900/30 blur-[100px]'
+          ? 'bg-emerald-900/10 blur-[100px]'
           : 'bg-indigo-200/50 blur-[90px]'}`}
       />
       <Orb className={`w-90 h-90 -bottom-20 -right-15 animate-float-med
         ${isDark
-          ? 'bg-violet-900/25 blur-[90px]'
+          ? 'bg-slate-800/30 blur-[90px]'
           : 'bg-violet-200/40 blur-[80px]'}`}
       />
       <Orb className={`w-55 h-55 top-[30%] right-[10%] animate-float-fast
         ${isDark
-          ? 'bg-blue-900/20 blur-[70px]'
+          ? 'bg-emerald-900/10 blur-[70px]'
           : 'bg-blue-200/35 blur-[60px]'}`}
       />
 
@@ -82,15 +82,15 @@ export default function SignIn() {
         className="relative z-10 w-full max-w-sm sm:max-w-md animate-card-entrance rounded-3xl"
         style={{
           background: isDark
-            ? 'rgba(15, 23, 42, 0.72)'
+            ? 'rgba(18, 18, 18, 0.72)'
             : 'rgba(255, 255, 255, 0.72)',
           backdropFilter: 'blur(28px) saturate(1.8)',
           WebkitBackdropFilter: 'blur(28px) saturate(1.8)',
           border: isDark
-            ? '1px solid rgba(255,255,255,0.09)'
+            ? '1px solid rgba(255,255,255,0.05)'
             : '1px solid rgba(255,255,255,0.9)',
           boxShadow: isDark
-            ? '0 32px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.06)'
+            ? '0 32px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.03)'
             : '0 32px 80px rgba(100,116,139,0.18), 0 0 0 1px rgba(255,255,255,0.6), inset 0 1px 0 rgba(255,255,255,0.9)',
         }}
       >
@@ -227,10 +227,17 @@ export default function SignIn() {
                 disabled={isLoading}
                 className="shimmer-btn w-full flex items-center justify-center gap-2.5 py-4 px-6 rounded-xl font-bold text-sm text-white transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
                 style={{
-                  background: isLoading
-                    ? 'linear-gradient(135deg, #6366f1, #4f46e5)'
-                    : 'linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #7c3aed 100%)',
-                  boxShadow: '0 8px 32px rgba(99,102,241,0.4), 0 2px 8px rgba(99,102,241,0.2)',
+                  background: isDark
+                    ? (isLoading 
+                        ? 'linear-gradient(135deg, #047857, #064e3b)' 
+                        : 'linear-gradient(135deg, #059669 0%, #047857 50%, #064e3b 100%)')
+                    : (isLoading
+                        ? 'linear-gradient(135deg, #059669, #047857)'
+                        : 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)'),
+                  boxShadow: isDark
+                    ? '0 8px 32px rgba(4,120,87,0.3), 0 2px 8px rgba(4,120,87,0.1)'
+                    : '0 8px 32px rgba(5,150,105,0.4), 0 2px 8px rgba(5,150,105,0.2)',
+                  color: '#ffffff',
                 }}
               >
                 {isLoading ? (

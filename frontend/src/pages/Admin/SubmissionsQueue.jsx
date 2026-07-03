@@ -5,8 +5,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Eye } from 'lucide-react';
-import { SearchableDropdown } from '../../components/common/SearchableDropdown';
-import { useNavigate } from 'react-router-dom';
+import { SearchableDropdown } from '../../components/SearchableDropdown';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const INSTITUTION_OPTIONS = [
   'All Institutions',
@@ -27,9 +27,10 @@ export const AdminQueuePage = ({
   publications,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [aSearchText, setASearchText] = useState('');
   const [aStatusFilter, setAStatusFilter] = useState('All statuses');
-  const [aInstitutionFilter, setAInstitutionFilter] = useState('All Institutions');
+  const [aInstitutionFilter, setAInstitutionFilter] = useState(['All Institutions']);
   const [isAdminSearchExpanded, setIsAdminSearchExpanded] = useState(false);
 
   const adminSearchContainerRef = useRef(null);
@@ -60,7 +61,7 @@ export const AdminQueuePage = ({
   const clearAdminFilters = () => {
     setASearchText('');
     setAStatusFilter('All statuses');
-    setAInstitutionFilter('All Institutions');
+    setAInstitutionFilter(['All Institutions']);
   };
 
   // Admin submission table list filter
@@ -81,7 +82,7 @@ export const AdminQueuePage = ({
       else if (mod === 2) pubInst = 'SNSRCAS';
       else pubInst = 'SNSCAHS';
     }
-    const matchesInst = aInstitutionFilter === 'All Institutions' || pubInst === aInstitutionFilter;
+    const matchesInst = aInstitutionFilter.includes('All Institutions') || aInstitutionFilter.includes(pubInst);
 
     return matchesSearch && matchesStatus && matchesInst;
   });
@@ -90,22 +91,21 @@ export const AdminQueuePage = ({
     <div className="space-y-6 w-full animate-fade-in">
 
       {/* Admin advanced filters block */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm text-left transition-all duration-300 hover:scale-[1.01] hover:shadow-md hover:border-slate-300">
-        <div className="flex flex-wrap md:flex-nowrap items-center gap-4 w-full">
+      <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-sm text-left transition-all duration-300 hover:scale-[1.01] hover:shadow-md hover:border-slate-300 relative z-20 overflow-visible">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap md:flex-nowrap items-start sm:items-center gap-3 w-full">
           {/* Search matches title or authors - Dynamic Lens */}
           <div
             ref={adminSearchContainerRef}
             className={`relative flex items-center h-10 transition-all duration-300 ease-out rounded-lg border shrink-0 ${isAdminSearchExpanded
-              ? 'w-64 sm:w-80 px-3 bg-white border-slate-300 shadow-xs'
+              ? 'w-full sm:w-64 md:w-72 px-3 bg-white border-slate-300 shadow-xs'
               : 'w-10 px-0 bg-slate-50 border-slate-200 shadow-none hover:bg-slate-100 hover:border-slate-300'
               }`}
           >
             <button
               type="button"
               onClick={() => {
-                if (!isAdminSearchExpanded) {
-                  setIsAdminSearchExpanded(true);
-                }
+                setIsAdminSearchExpanded(!isAdminSearchExpanded);
+                if (isAdminSearchExpanded) setASearchText('');
               }}
               className={`flex items-center justify-center rounded-lg transition-colors cursor-pointer shrink-0 ${isAdminSearchExpanded
                 ? 'text-slate-400'
@@ -128,7 +128,7 @@ export const AdminQueuePage = ({
           </div>
 
           {/* Status */}
-          <div className="flex-1 min-w-35">
+          <div className="w-full sm:flex-1 sm:min-w-32">
             <SearchableDropdown
               options={['All statuses', 'Pending', 'Approved']}
               value={aStatusFilter}
@@ -138,19 +138,20 @@ export const AdminQueuePage = ({
           </div>
 
           {/* Institution */}
-          <div className="flex-1 min-w-45">
+          <div className="w-full sm:flex-1 sm:min-w-40">
             <SearchableDropdown
               options={INSTITUTION_OPTIONS}
               value={aInstitutionFilter}
               onChange={setAInstitutionFilter}
               placeholder="Search institution..."
+              isMulti={true}
             />
           </div>
 
-          <div className="shrink-0">
+          <div className="shrink-0 w-full sm:w-auto">
             <button
               onClick={clearAdminFilters}
-              className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-lg transition-colors text-center cursor-pointer"
+              className="w-full sm:w-auto px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-lg transition-colors text-center cursor-pointer"
             >
               Clear Filters
             </button>
@@ -159,14 +160,14 @@ export const AdminQueuePage = ({
       </div>
 
       {/* Active review workspace list router */}
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 gap-6 relative z-10">
         {/* Render cumulative audit queue */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden text-left">
 
 
-          {/* Desktop/Global view table */}
-          <div className="overflow-x-auto w-full">
-            <table className="w-full min-w-250 border-collapse text-xs text-left">
+          {/* Scrollable table wrapper */}
+          <div className="overflow-x-auto w-full -webkit-overflow-scrolling-touch">
+            <table className="w-full min-w-175 border-collapse text-xs text-left">
               <thead>
                 <tr className="bg-slate-50 text-slate-400 uppercase tracking-widest font-extrabold text-[9px] border-b border-slate-200">
                   <th className="p-4 text-center">S.No</th>
@@ -232,17 +233,16 @@ export const AdminQueuePage = ({
                     </td>
                     <td className="p-4 text-center">
                       <div className="flex items-center justify-center">
-                        {(!currentUser.isTemporaryAdmin || currentUser.granularPermissions?.features?.includes('evaluate_manuscript')) && (
                           <button
                             onClick={() => {
-                              navigate('/admin/evaluation', { state: { pubId: pub.id } });
+                              const prefix = location.pathname.startsWith('/faculty') ? '/faculty' : '/admin';
+                              navigate(`${prefix}/evaluation`, { state: { pubId: pub.id } });
                             }}
                             className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-xs font-bold flex items-center justify-center space-x-1 cursor-pointer transition-all active:scale-95 mx-auto"
                           >
                             <Eye className="h-3.5 w-3.5" />
                             <span>Evaluate</span>
                           </button>
-                        )}
                       </div>
                     </td>
                   </tr>

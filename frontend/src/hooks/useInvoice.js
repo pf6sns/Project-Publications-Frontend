@@ -23,12 +23,8 @@ export function useInvoice() {
 
   const downloadInvoice = async (invoiceId) => {
     try {
-      const url = await invoiceService.fetchInvoiceUrl(invoiceId);
-      // Simulate download
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${invoiceId}.pdf`;
-      link.click();
+      // Defer to the service's implementation (which natively prints)
+      await invoiceService.downloadInvoice(invoiceId);
     } catch (err) {
       setError(err.message || 'Failed to download invoice');
     }

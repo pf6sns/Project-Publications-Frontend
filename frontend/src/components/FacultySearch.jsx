@@ -46,15 +46,17 @@ export function FacultySearch({ onSearch }) {
     <div
       ref={searchContainerRef}
       className={`relative flex items-center h-10 transition-all duration-300 ease-out rounded-lg border shrink-0 ${isSearchExpanded
-          ? 'w-64 sm:w-80 px-3 bg-white border-slate-300 shadow-xs'
+          ? 'w-full sm:w-64 md:w-72 px-3 bg-white border-slate-300 shadow-xs'
           : 'w-10 px-0 bg-slate-50 border-slate-200 shadow-none hover:bg-slate-100 hover:border-slate-300'
         }`}
     >
       <button
         type="button"
         onClick={() => {
-          if (!isSearchExpanded) {
-            setIsSearchExpanded(true);
+          setIsSearchExpanded(!isSearchExpanded);
+          if (isSearchExpanded) {
+            setSearchTerm('');
+            onSearch(''); // Immediately trigger clear
           }
         }}
         className={`flex items-center justify-center rounded-lg transition-colors cursor-pointer shrink-0 ${isSearchExpanded

@@ -11,7 +11,8 @@
  */
 
 import * as pubApi from '../api/publicationApi';
-import { logSystemEvent } from './notificationService';
+import { logSystemEvent, notifyAdminNewPublication, notifyFacultyPublicationReviewed } from './notificationService';
+import { uploadFile } from './uploadService';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Publications
@@ -70,9 +71,15 @@ export const submitPublication = async (data, currentUser) => {
       existingPub.id, existingPub.title,
       'Manuscript Reuploaded',
       `Reuploaded a new version (V${nextVer}) via upload form.`,
-      `Your publication "${existingPub.title}" has been updated to V${nextVer}.`,
+      null, // No direct faculty notification
       'info'
     );
+    await notifyAdminNewPublication(existingPub.id, existingPub.title);
+    
+    if (data.fileObject) {
+      uploadFile(data.fileObject, existingPub.id, nextVer);
+    }
+    
     return { success: true, isUpdate: true, publication: updated };
   }
 
@@ -114,9 +121,15 @@ export const submitPublication = async (data, currentUser) => {
     newPubId, data.title,
     'Publication Submitted',
     'Submitted Version 1',
-    'Submitted successfully.',
+    null, // No direct faculty notification
     'info'
   );
+  await notifyAdminNewPublication(newPubId, data.title);
+  
+  if (data.fileObject) {
+    uploadFile(data.fileObject, newPubId, 1);
+  }
+  
   return { success: true, isUpdate: false, publication: saved };
 };
 
@@ -169,9 +182,11 @@ export const evaluatePublication = async (pubId, action, feedback, reviewer, rev
     pubId, pub.title,
     `publication ${action}d.`,
     `Evaluated with status ${nextStatus}`,
-    `Your publication has been ${nextStatus}.`,
+    null, // Handled by specific notification
     action === 'approve' ? 'success' : 'error'
   );
+  
+  await notifyFacultyPublicationReviewed(pub.authorId, pubId, pub.title);
 
   return updated;
 };

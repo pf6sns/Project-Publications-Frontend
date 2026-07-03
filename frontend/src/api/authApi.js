@@ -14,7 +14,7 @@
 import { simulateNetwork, getFromStorage, saveToStorage, removeFromStorage } from './apiClient';
 import { mockUsers, mockPasswords } from '../mocks/users.mock.js';
 
-const USERS_STORAGE_KEY = 'rpms_users_record';
+const USERS_STORAGE_KEY = 'rpms_users_record_v2';
 const SESSION_STORAGE_KEY = 'rpms_user';
 
 /**

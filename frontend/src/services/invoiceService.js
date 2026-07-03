@@ -61,9 +61,7 @@ export const fetchInvoiceUrl = async (invoiceId) => {
  * @param {string} invoiceNumber - Used as the download filename
  */
 export const downloadInvoice = async (invoiceId, invoiceNumber) => {
-  const url = await fetchInvoiceUrl(invoiceId);
-  // In production, this will trigger a real file download from S3
-  console.info(`[invoiceService] Invoice download requested: ${url}`);
-  // Mock: open URL in new tab
-  window.open(url, '_blank');
+  console.info(`[invoiceService] Triggering print for invoice PDF download`);
+  // Use browser's print-to-pdf functionality to generate the PDF natively
+  window.print();
 };

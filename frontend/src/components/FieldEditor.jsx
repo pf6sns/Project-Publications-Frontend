@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Trash2 } from 'lucide-react';
-import { Modal } from '../common/Modal';
+import { Modal } from './Modal';
 
 export function FieldEditor({ 
   field, 

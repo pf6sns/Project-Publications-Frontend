@@ -76,8 +76,8 @@ export function PublicationUploadForm({
     e.preventDefault();
     setErrorMsg('');
 
-    if (!publicationDetails.title.trim() || publicationDetails.title.length < 15) {
-      setErrorMsg('Publication Title is required and must be at least 15 characters.');
+    if (!publicationDetails.title.trim()) {
+      setErrorMsg('Publication Title is required.');
       return;
     }
     
@@ -96,7 +96,7 @@ export function PublicationUploadForm({
   const currentDepartment = publicationDetails.department || currentUser.department || ALL_DEPARTMENTS[0];
 
   return (
-    <div className="bg-pure-white rounded-2xl border border-platinum-silver shadow-xs p-6 md:p-8 w-full max-w-4xl mx-auto font-sans">
+    <div className="bg-pure-white rounded-2xl border border-platinum-silver shadow-xs p-4 sm:p-6 md:p-8 w-full max-w-4xl mx-auto font-sans">
       <div className="mb-6">
         <h2 className="text-xl font-black text-charcoal uppercase tracking-wide">Upload Manuscript</h2>
         <p className="text-xs font-medium text-slate-gray mt-1">Provide the details of your publication</p>
@@ -104,7 +104,7 @@ export function PublicationUploadForm({
 
       {errorMsg && (
         <div className="mb-6 bg-red-50 border border-red-200/50 rounded-lg p-3 text-xs text-red-700 flex items-start space-x-2">
-          <AlertCircle className="h-4 w-4 text-red-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
           <span>{errorMsg}</span>
         </div>
       )}
@@ -127,34 +127,30 @@ export function PublicationUploadForm({
           <label className="block text-xs font-bold uppercase text-charcoal mb-1.5">
             Publication Title <span className="text-red-500">*</span>
           </label>
-          <textarea
-            value={publicationDetails.title}
-            onChange={(e) => onUpdateDetails({ title: e.target.value })}
-            placeholder="Enter complete research publication title..."
-            className="w-full text-sm border border-platinum-silver rounded-xl p-3 focus:ring-2 focus:ring-steel-gray focus:outline-none min-h-[80px] bg-pure-white text-charcoal"
-            maxLength={titleCharLimit}
-          />
-          <div className="flex justify-between text-[10px] font-medium text-slate-gray mt-1.5">
-            <span>Minimum 15 characters</span>
-            <span className={publicationDetails.title.length > titleCharLimit ? 'text-red-600' : ''}>
-              {publicationDetails.title.length} / {titleCharLimit} chars
-            </span>
+          <div className="relative">
+            <input
+              type="text"
+              value={publicationDetails.title}
+              onChange={(e) => onUpdateDetails({ title: e.target.value })}
+              placeholder="Enter complete research publication title..."
+              className="w-full text-sm border border-platinum-silver rounded-xl p-3 pr-16 focus:ring-2 focus:ring-steel-gray focus:outline-none bg-pure-white text-charcoal"
+              maxLength={titleCharLimit}
+            />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium text-slate-400 pointer-events-none">
+              <span className={publicationDetails.title.length > titleCharLimit ? 'text-red-600' : ''}>
+                {publicationDetails.title.length} / {titleCharLimit}
+              </span>
+            </div>
           </div>
         </div>
 
         <div>
           <label className="block text-xs font-bold uppercase text-charcoal mb-1.5">
-            Department <span className="text-red-500">*</span>
+            Department
           </label>
-          <select
-            value={currentDepartment}
-            onChange={(e) => onUpdateDetails({ department: e.target.value })}
-            className="w-full text-sm border border-platinum-silver rounded-xl p-3 focus:ring-2 focus:ring-steel-gray focus:outline-none bg-pure-white text-charcoal"
-          >
-            {ALL_DEPARTMENTS.map((dept) => (
-              <option key={dept} value={dept}>{dept}</option>
-            ))}
-          </select>
+          <div className="w-full text-sm border border-platinum-silver rounded-xl p-3 bg-ice-gray text-slate-gray cursor-not-allowed">
+            {currentDepartment}
+          </div>
         </div>
 
         <div>
@@ -167,7 +163,7 @@ export function PublicationUploadForm({
             onDragLeave={handleDrag}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer select-none ${
+            className={`border-2 border-dashed rounded-2xl p-4 sm:p-6 md:p-8 text-center transition-all cursor-pointer select-none ${
               dragActive ? 'border-charcoal bg-ice-gray scale-[1.01]' : 'border-platinum-silver bg-arctic-white hover:bg-ice-gray hover:border-charcoal'
             }`}
           >
@@ -190,7 +186,7 @@ export function PublicationUploadForm({
                   <FileText className="h-6 w-6" />
                 </span>
                 <div>
-                  <p className="font-bold text-charcoal truncate max-w-[240px] md:max-w-md">{publicationDetails.file.name}</p>
+                  <p className="font-bold text-charcoal truncate max-w-45 sm:max-w-60 md:max-w-md">{publicationDetails.file.name}</p>
                   <p className="text-slate-gray font-medium mt-0.5">{publicationDetails.file.size}</p>
                 </div>
               </div>
@@ -205,7 +201,7 @@ export function PublicationUploadForm({
           )}
         </div>
 
-        <div className="pt-6 border-t border-platinum-silver/50 flex justify-end">
+        <div className="pt-6 border-t border-platinum-silver/50 flex flex-col sm:flex-row items-stretch sm:justify-end gap-3">
           <button
             type="submit"
             className="px-6 py-3 text-sm font-bold text-white bg-charcoal hover:bg-steel-gray rounded-xl shadow-xs transition-colors flex items-center space-x-2 cursor-pointer"

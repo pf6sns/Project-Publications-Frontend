@@ -19,10 +19,11 @@ export const facultyService = {
    * @param {number} page
    * @param {number} limit
    * @param {string} searchQuery
+   * @param {string[]} institutionFilters
    * @returns {{ data: object[], total: number, page: number, limit: number, totalPages: number }}
    */
-  getFacultyList: async (page = 1, limit = 20, searchQuery = '') => {
-    return await facultyApi.fetchFacultyList(page, limit, searchQuery);
+  getFacultyList: async (page = 1, limit = 20, searchQuery = '', institutionFilters = ['All Institutions']) => {
+    return await facultyApi.fetchFacultyList(page, limit, searchQuery, institutionFilters);
   },
 
   /**

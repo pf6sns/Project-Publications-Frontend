@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { AdminReviews } from '../../components/evaluation/EvaluationPanel';
+import { AdminReviews } from '../../components/EvaluationPanel';
 
 export const AdminEvaluationPage = ({
   publications,
@@ -33,7 +33,9 @@ export const AdminEvaluationPage = ({
         onSelectPub={(id) => {
           setSelectedPubId(id);
           if (!id) {
-             navigate('/admin/queue');
+             // Navigate within the correct portal prefix
+             const prefix = location.pathname.startsWith('/faculty') ? '/faculty' : '/admin';
+             navigate(`${prefix}/queue`);
           }
         }}
         users={users}

@@ -5,8 +5,8 @@
 
 import React, { useState } from 'react';
 import { Eye, FileText, CheckCircle2, XCircle, AlertCircle, ArrowLeft, Download, UploadCloud, Trash2 } from 'lucide-react';
-import { downloadFile } from '../../fileStore';
-import { mockUsers } from '../../data';
+import { downloadFile } from '../fileStore';
+import { mockUsers } from '../data';
 
 export function AdminReviews({
   publications,

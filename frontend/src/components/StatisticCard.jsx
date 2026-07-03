@@ -11,7 +11,7 @@ import {
   FileSpreadsheet,
   X,
 } from 'lucide-react';
-import { historicalPublicationsForStats } from '../../data';
+import { historicalPublicationsForStats } from '../data';
 
 // ─── Period Grouping Helpers ──────────────────────────────────────────────────
 

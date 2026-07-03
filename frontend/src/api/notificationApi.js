@@ -53,9 +53,17 @@ export const logActivity = async (activity) => {
  * Fetches all notifications for the current user.
  * Future: GET /api/notifications (returns only current user's notifications via JWT)
  */
-export const fetchNotifications = async () => {
+export const fetchNotifications = async (currentUser) => {
   await simulateNetwork(50);
-  return getFromStorage(NOTIFICATIONS_KEY, initialNotifications);
+  const notifs = getFromStorage(NOTIFICATIONS_KEY, initialNotifications);
+  if (!currentUser) return [];
+  if (currentUser.role === 'Admin') {
+    return notifs.filter(n => n.targetRole === 'Admin');
+  }
+  return notifs.filter(n => 
+    n.userId === currentUser.id && 
+    (n.type === 'PUBLICATION_REVIEWED' || n.title === 'Publication Reviewed')
+  );
 };
 
 /**
@@ -69,6 +77,19 @@ export const addNotification = async (notification) => {
   const notifs = getFromStorage(NOTIFICATIONS_KEY, initialNotifications);
   const updated = [notification, ...notifs];
   saveToStorage(NOTIFICATIONS_KEY, updated);
+  return notification;
+};
+
+/**
+ * Updates a notification.
+ * Future: PUT /api/notifications/:id
+ */
+export const updateNotification = async (id, updates) => {
+  await simulateNetwork(50);
+  const notifs = getFromStorage(NOTIFICATIONS_KEY, initialNotifications);
+  const updated = notifs.map(n => n.id === id ? { ...n, ...updates } : n);
+  saveToStorage(NOTIFICATIONS_KEY, updated);
+  return updated.find(n => n.id === id);
 };
 
 /**
@@ -77,10 +98,27 @@ export const addNotification = async (notification) => {
  *
  * @returns {object[]} Updated notifications
  */
-export const markAllRead = async () => {
+export const markAllRead = async (currentUser) => {
   await simulateNetwork(50);
   const notifs = getFromStorage(NOTIFICATIONS_KEY, initialNotifications);
-  const updated = notifs.map(n => ({ ...n, read: true }));
+  const updated = notifs.map(n => {
+    const isTarget = currentUser.role === 'Admin' 
+      ? n.targetRole === 'Admin' 
+      : (n.userId === currentUser.id && (n.type === 'PUBLICATION_REVIEWED' || n.title === 'Publication Reviewed'));
+    return isTarget ? { ...n, read: true } : n;
+  });
   saveToStorage(NOTIFICATIONS_KEY, updated);
-  return updated;
+  return updated.filter(n => currentUser.role === 'Admin' 
+    ? n.targetRole === 'Admin' 
+    : (n.userId === currentUser.id && (n.type === 'PUBLICATION_REVIEWED' || n.title === 'Publication Reviewed')));
+};
+
+export const clearNotifications = async (currentUser) => {
+  await simulateNetwork(50);
+  const notifs = getFromStorage(NOTIFICATIONS_KEY, initialNotifications);
+  const updated = notifs.filter(n => {
+    if (currentUser.role === 'Admin') return n.targetRole !== 'Admin';
+    return !(n.userId === currentUser.id && (n.type === 'PUBLICATION_REVIEWED' || n.title === 'Publication Reviewed'));
+  });
+  saveToStorage(NOTIFICATIONS_KEY, updated);
 };

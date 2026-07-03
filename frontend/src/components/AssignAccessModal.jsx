@@ -9,26 +9,32 @@ import {
   X, 
   AlertCircle, 
   CheckCircle2,
-  Lock,
-  FileText,
   Check
 } from 'lucide-react';
-import { Modal } from '../common/Modal';
+import { Modal } from './Modal';
 
 const PAGES = [
-  { id: 'dashboard', label: 'Dashboard' },
+  { 
+    id: 'dashboard', 
+    label: 'Dashboard',
+    features: [{ id: 'export_data', label: 'Export Data' }]
+  },
+  { 
+    id: 'faculty_profiles', 
+    label: 'Faculty Profiles',
+    features: [{ id: 'manage_profile_fields', label: 'Manage Profile Fields' }]
+  },
   { id: 'queue', label: 'Submissions Queue' },
-  { id: 'evaluation', label: 'Evaluation Console' },
-  { id: 'upload', label: 'Upload Manuscript' },
-  { id: 'publications', label: 'My Publications' },
+  { 
+    id: 'upload', 
+    label: 'Upload Manuscript',
+    features: [
+      { id: 'create_category', label: 'Create Category' },
+      { id: 'edit', label: 'Edit Manuscript' },
+      { id: 'delete', label: 'Delete Manuscript' },
+    ]
+  },
   { id: 'assign_access', label: 'Assign Access' },
-];
-
-const FEATURES = [
-  { id: 'evaluate_manuscript', label: 'Evaluate Manuscript', requiredPage: 'evaluation' },
-  { id: 'delete_manuscript', label: 'Delete Manuscript', requiredPage: 'queue' },
-  { id: 'export_data', label: 'Export Data', requiredPage: 'dashboard' },
-  { id: 'manage_users', label: 'Manage Users', requiredPage: 'assign_access' },
 ];
 
 export function GrantAssessorModal({
@@ -44,11 +50,21 @@ export function GrantAssessorModal({
 
   useEffect(() => {
     if (isOpen) {
-      setIsSuccess(type === 'revoked'); // If revoking, we just show success immediately for now.
-      setSelectedPages([]);
-      setSelectedFeatures([]);
+      setIsSuccess(type === 'revoked');
+      setSelectedPages(type === 'granted' ? (facultyUser?.granularPermissions?.pages || []) : []);
+      setSelectedFeatures(type === 'granted' ? (facultyUser?.granularPermissions?.features || []) : []);
     }
-  }, [isOpen, type]);
+  }, [isOpen]); // Only run when the modal is opened, to avoid resetting state on parent updates
+
+  // Auto-close success popup after 2.5 seconds
+  useEffect(() => {
+    if (isOpen && isSuccess) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, isSuccess, onClose]);
 
   if (!isOpen || !facultyUser) return null;
 
@@ -56,9 +72,6 @@ export function GrantAssessorModal({
   const handleTogglePage = (pageId) => {
     setSelectedPages(prev => {
       if (prev.includes(pageId)) {
-        // If unchecking a page, we should also uncheck features that depend on it
-        const dependingFeatures = FEATURES.filter(f => f.requiredPage === pageId).map(f => f.id);
-        setSelectedFeatures(fPrev => fPrev.filter(fId => !dependingFeatures.includes(fId)));
         return prev.filter(p => p !== pageId);
       } else {
         return [...prev, pageId];
@@ -66,22 +79,32 @@ export function GrantAssessorModal({
     });
   };
 
-  // Handle toggling a feature
-  const handleToggleFeature = (feature) => {
-    if (selectedFeatures.includes(feature.id)) {
-      setSelectedFeatures(prev => prev.filter(f => f !== feature.id));
-    } else {
-      if (!selectedPages.includes(feature.requiredPage)) {
-        setSelectedPages(prev => [...prev, feature.requiredPage]);
+  const handleToggleFeature = (featureId) => {
+    setSelectedFeatures(prev => {
+      if (prev.includes(featureId)) {
+        return prev.filter(f => f !== featureId);
+      } else {
+        return [...prev, featureId];
       }
-      setSelectedFeatures(prev => [...prev, feature.id]);
-    }
+    });
   };
 
   const handleConfirmGrants = () => {
-    // Pass the selected permissions back to the parent
+    let finalPages = [...selectedPages];
+    
+    // Auto-grant dependent pages
+    if (selectedFeatures.includes('export_data') && !finalPages.includes('dashboard')) {
+      finalPages.push('dashboard');
+    }
+    if ((selectedFeatures.includes('create_category') || selectedFeatures.includes('edit') || selectedFeatures.includes('delete')) && !finalPages.includes('upload')) {
+      finalPages.push('upload');
+    }
+    if (selectedFeatures.includes('manage_profile_fields') && !finalPages.includes('faculty_profiles')) {
+      finalPages.push('faculty_profiles');
+    }
+
     if (onConfirmGrant) {
-      onConfirmGrant(facultyUser.id, { pages: selectedPages, features: selectedFeatures });
+      onConfirmGrant(facultyUser.id, { pages: finalPages, features: selectedFeatures });
     }
     setIsSuccess(true);
   };
@@ -164,51 +187,46 @@ export function GrantAssessorModal({
       }
     >
       <div>
-        <p className="text-sm text-slate-500 mb-4">Select the pages and features to grant to <span className="font-bold">{facultyUser.name}</span>:</p>
+        <p className="text-sm text-slate-500 mb-4">Select the pages to grant to <span className="font-bold">{facultyUser.name}</span>:</p>
 
-        <div className="bg-slate-50 rounded-xl border border-slate-200 overflow-visible p-4 space-y-4 text-left">
-          {/* Pages Section */}
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 ml-0.5">
-              Pages Access
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">
-              {PAGES.map(page => (
-                <label key={page.id} className="flex items-center gap-2.5 cursor-pointer group">
+        <div className="bg-slate-50 rounded-xl border border-slate-200 overflow-visible p-4 text-left">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 ml-0.5">
+            Access Controls
+          </p>
+          <div className="columns-1 sm:columns-2 gap-x-4">
+            {PAGES.map(page => (
+              <div key={page.id} className="flex flex-col space-y-2 break-inside-avoid mb-4">
+                <label className="flex items-center gap-2.5 cursor-pointer group">
                   <input 
                     type="checkbox" 
                     className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer accent-emerald-600 shrink-0"
                     checked={selectedPages.includes(page.id)}
                     onChange={() => handleTogglePage(page.id)}
                   />
-                  <span className="text-sm text-slate-700 group-hover:text-slate-900 leading-tight">
+                  <span className="text-sm font-semibold text-slate-700 group-hover:text-slate-900 leading-tight">
                     {page.label}
                   </span>
                 </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Features Section */}
-          <div className="pt-2">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 ml-0.5">
-              Specific Features
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">
-              {FEATURES.map(feature => (
-                <label key={feature.id} className="flex items-center gap-2.5 cursor-pointer group">
-                  <input 
-                    type="checkbox" 
-                    className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer accent-emerald-600 shrink-0"
-                    checked={selectedFeatures.includes(feature.id)}
-                    onChange={() => handleToggleFeature(feature)}
-                  />
-                  <span className="text-sm text-slate-700 group-hover:text-slate-900 leading-tight">
-                    {feature.label}
-                  </span>
-                </label>
-              ))}
-            </div>
+                
+                {page.features && page.features.length > 0 && (
+                  <div className="flex flex-col space-y-2 pl-6 mt-1 border-l-2 border-slate-100 ml-1.5">
+                    {page.features.map(feature => (
+                      <label key={feature.id} className="flex items-center gap-2.5 cursor-pointer group">
+                        <input 
+                          type="checkbox" 
+                          className="w-3.5 h-3.5 rounded border-slate-300 text-emerald-500 focus:ring-emerald-500 cursor-pointer accent-emerald-500 shrink-0"
+                          checked={selectedFeatures.includes(feature.id)}
+                          onChange={() => handleToggleFeature(feature.id)}
+                        />
+                        <span className="text-xs text-slate-600 group-hover:text-slate-800 leading-tight">
+                          {feature.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </div>

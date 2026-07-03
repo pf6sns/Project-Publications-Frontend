@@ -66,22 +66,21 @@ export const PublicationsPage = ({
       {!selectedPubId ? (
         <>
           {/* Search and filters row */}
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm text-left animate-fade-in transition-all duration-300 hover:scale-[1.01] hover:shadow-md hover:border-slate-300">
-            <div className="flex flex-wrap md:flex-nowrap items-center gap-4 w-full">
+          <div className="bg-white p-4 sm:p-5 rounded-xl border border-slate-200 shadow-sm text-left animate-fade-in transition-all duration-300 hover:scale-[1.01] hover:shadow-md hover:border-slate-300">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap md:flex-nowrap items-start sm:items-center justify-between gap-3 w-full">
               {/* Search matches title or id - Dynamic Lens */}
               <div
                 ref={facultySearchContainerRef}
                 className={`relative flex items-center h-10 transition-all duration-300 ease-out rounded-lg border shrink-0 ${isFacultySearchExpanded
-                    ? 'w-64 sm:w-80 px-3 bg-white border-slate-300 shadow-xs'
+                    ? 'w-full sm:w-64 md:w-72 px-3 bg-white border-slate-300 shadow-xs'
                     : 'w-10 px-0 bg-slate-50 border-slate-200 shadow-none hover:bg-slate-100 hover:border-slate-300'
                   }`}
               >
                 <button
                   type="button"
                   onClick={() => {
-                    if (!isFacultySearchExpanded) {
-                      setIsFacultySearchExpanded(true);
-                    }
+                    setIsFacultySearchExpanded(!isFacultySearchExpanded);
+                    if (isFacultySearchExpanded) setFSearchText('');
                   }}
                   className={`flex items-center justify-center rounded-lg transition-colors cursor-pointer shrink-0 ${isFacultySearchExpanded
                       ? 'text-slate-400'
@@ -104,7 +103,7 @@ export const PublicationsPage = ({
               </div>
 
               {/* Status */}
-              <div className="flex-1 min-w-35">
+              <div className="w-full sm:w-64 md:w-72 shrink-0">
                 <select
                   value={fStatusFilter}
                   onChange={(e) => setFStatusFilter(e.target.value)}
@@ -120,10 +119,9 @@ export const PublicationsPage = ({
 
           {/* Publications listings (Responsive table & card views) */}
           <div className="space-y-4 animate-fade-in">
-            {/* Desktop view table */}
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden text-left">
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-xs text-left">
+              <div className="overflow-x-auto w-full">
+                <table className="w-full min-w-150 border-collapse text-xs text-left">
                   <thead>
                     <tr className="bg-slate-50 text-slate-400 uppercase tracking-widest font-extrabold text-[9px] border-b border-slate-200">
                       <th className="p-4 text-center">S.No</th>
@@ -215,7 +213,7 @@ export const PublicationsPage = ({
             const target = publications.find(p => p.id === selectedPubId);
             if (!target) return null;
             return (
-              <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm text-left animate-fade-in space-y-6">
+          <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 md:p-8 shadow-sm text-left animate-fade-in space-y-6">
                 {/* Badges Row */}
                 <div className="flex justify-between items-center w-full">
                   <span className="bg-white border border-slate-200 font-mono font-bold px-3 py-1.5 rounded-lg text-xs text-slate-700 shadow-3xs">

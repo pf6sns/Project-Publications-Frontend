@@ -1,10 +1,11 @@
 import React from 'react';
 import { Edit2, Trash2 } from 'lucide-react';
 
-export function CategoryActions({ onEdit, onDelete }) {
+export function CategoryActions({ canEdit, canDelete, onEdit, onDelete }) {
   return (
     <div className="flex items-center space-x-2">
-      <button
+      {canEdit && (
+        <button
         onClick={(e) => {
           e.stopPropagation();
           onEdit();
@@ -14,6 +15,8 @@ export function CategoryActions({ onEdit, onDelete }) {
       >
         <Edit2 className="h-3.5 w-3.5" />
       </button>
+      )}
+      {canDelete && (
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -24,6 +27,7 @@ export function CategoryActions({ onEdit, onDelete }) {
       >
         <Trash2 className="h-3.5 w-3.5" />
       </button>
+      )}
     </div>
   );
 }

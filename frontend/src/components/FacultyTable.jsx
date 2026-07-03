@@ -13,13 +13,13 @@ export function FacultyTable({
   return (
     <div className="w-full bg-pure-white rounded-2xl border border-platinum-silver shadow-xs overflow-hidden font-sans">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-slate-gray">
+        <table className="w-full min-w-145 text-left text-sm text-slate-gray">
           <thead className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider bg-slate-50 border-b border-platinum-silver/45">
             <tr>
               <th scope="col" className="px-6 py-4">S.No</th>
               <th scope="col" className="px-6 py-4">Faculty ID</th>
               <th scope="col" className="px-6 py-4">Faculty Name</th>
-              <th scope="col" className="px-6 py-4">Department</th>
+              <th scope="col" className="px-6 py-4">Institution</th>
               <th scope="col" className="px-6 py-4">Publications</th>
               <th scope="col" className="px-6 py-4 text-center">View</th>
             </tr>
@@ -47,7 +47,7 @@ export function FacultyTable({
                   </td>
                   <td className="px-6 py-4 font-mono text-xs font-bold text-slate-gray">{faculty.id}</td>
                   <td className="px-6 py-4 font-bold text-charcoal">{faculty.name}</td>
-                  <td className="px-6 py-4 font-medium">{faculty.department}</td>
+                  <td className="px-6 py-4 font-medium">{faculty.institution}</td>
                   <td className="px-6 py-4">
                     <span className="bg-slate-100 text-charcoal text-xs font-bold px-2.5 py-0.5 rounded-md border border-platinum-silver/40">
                       {faculty.publications || 0}

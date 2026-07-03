@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { UserProfile } from '../../components/profile/UserProfileTable';
+import { UserProfile } from '../../components/UserProfileTable';
 
 export const ProfilePage = ({ currentUser, publications, onUpdateProfile, globalFields }) => {
   return (

@@ -8,6 +8,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { RoleProvider } from './context/RoleContext';
+import { NotificationProvider } from './context/NotificationContext';
 import AppRoutes from './routes/AppRoutes';
 
 export default function App() {
@@ -15,9 +16,11 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <RoleProvider>
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
+          <NotificationProvider>
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </NotificationProvider>
         </RoleProvider>
       </AuthProvider>
     </ThemeProvider>

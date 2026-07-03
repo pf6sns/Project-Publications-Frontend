@@ -5,8 +5,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { ShieldCheck, X, Search, Settings } from 'lucide-react';
-import { GrantAssessorModal } from '../../components/AssignAccessModal';
 import { SearchableDropdown } from '../../components/SearchableDropdown';
+import { Modal } from '../../components/Modal';
+import { assignMainAdmin, revokeMainAdmin } from '../../services/assignRoleService';
+import { useAuth } from '../../hooks/useAuth';
 
 const INSTITUTION_OPTIONS = [
   'All Institutions',
@@ -22,12 +24,8 @@ const INSTITUTION_OPTIONS = [
   'SNSACADEMY'
 ];
 
-export const AssignAccessPage = ({
-  currentUser,
-  users,
-  grantTemporaryAdmin,
-  revokeTemporaryAdmin,
-}) => {
+export const AssignRolePage = () => {
+  const { users, setUsers } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstitution, setSelectedInstitution] = useState(['All Institutions']);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
@@ -56,16 +54,31 @@ export const AssignAccessPage = ({
     }
   }, [isSearchExpanded]);
   
-  const [grantModalOpen, setGrantModalOpen] = useState(false);
-  const [grantingTargetUserId, setGrantingTargetUserId] = useState(null);
-  const [grantModalType, setGrantModalType] = useState('granted');
+  const [confirmModalState, setConfirmModalState] = useState({ isOpen: false, userId: null, action: null });
 
-  const handleConfirmGrant = (userId, permissions) => {
-    grantTemporaryAdmin(userId, permissions);
+  const confirmAction = async () => {
+    const { userId, action } = confirmModalState;
+    if (action === 'assign') {
+      const nextUsers = await assignMainAdmin(userId);
+      setUsers(nextUsers);
+    } else if (action === 'revoke') {
+      const nextUsers = await revokeMainAdmin(userId);
+      setUsers(nextUsers);
+    }
+    setConfirmModalState({ isOpen: false, userId: null, action: null });
+  };
+
+  const handleAssign = (userId) => {
+    setConfirmModalState({ isOpen: true, userId, action: 'assign' });
+  };
+
+  const handleRevoke = (userId) => {
+    setConfirmModalState({ isOpen: true, userId, action: 'revoke' });
   };
 
   const filteredUsers = Object.values(users).filter(u => {
-    if (u.role !== 'Faculty') return false;
+    if (u.role !== 'Faculty' && u.role !== 'Admin') return false; // Developer only manages Faculty and Admin
+    if (u.id === 'DEV01') return false; // Do not show Developer
     
     // Filter by institution
     if (!selectedInstitution.includes('All Institutions')) {
@@ -89,13 +102,40 @@ export const AssignAccessPage = ({
 
   return (
     <div className="space-y-6 text-left w-full">
-      <GrantAssessorModal 
-        isOpen={grantModalOpen} 
-        onClose={() => setGrantModalOpen(false)} 
-        facultyUser={grantingTargetUserId ? users[grantingTargetUserId] : null} 
-        type={grantModalType} 
-        onConfirmGrant={handleConfirmGrant}
-      />
+      <Modal
+        isOpen={confirmModalState.isOpen}
+        onClose={() => setConfirmModalState({ isOpen: false, userId: null, action: null })}
+        title={confirmModalState.action === 'assign' ? 'Assign Main Admin' : 'Revoke Main Admin'}
+        icon={confirmModalState.action === 'assign' ? ShieldCheck : X}
+        maxWidthClass="max-w-md"
+        footerActions={
+          <>
+            <button
+              onClick={() => setConfirmModalState({ isOpen: false, userId: null, action: null })}
+              className="px-4 py-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmAction}
+              className={`px-4 py-2 text-sm font-bold text-white rounded-lg transition-colors shadow-sm ${
+                confirmModalState.action === 'assign' 
+                  ? 'bg-emerald-600 hover:bg-emerald-700' 
+                  : 'bg-red-600 hover:bg-red-700'
+              }`}
+            >
+              Confirm
+            </button>
+          </>
+        }
+      >
+        <p className="text-sm text-slate-600">
+          {confirmModalState.action === 'assign' 
+            ? "Are you sure you want to assign the Main Admin role to this user? They will gain full administrative privileges."
+            : "Are you sure you want to revoke the Main Admin role from this user? They will lose all administrative access."
+          }
+        </p>
+      </Modal>
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm transition-all duration-300 hover:scale-[1.01] hover:shadow-md">
         
         {/* Search and filters row */}
@@ -126,7 +166,7 @@ export const AssignAccessPage = ({
             <input
               ref={searchInputRef}
               type="text"
-              placeholder="Search faculty by name or department..."
+              placeholder="Search user by name or department..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={`w-full text-xs pl-2 bg-transparent text-slate-900 border-none outline-none focus:ring-0 focus:outline-none transition-opacity duration-200 ${isSearchExpanded ? 'opacity-100 w-full pointer-events-auto' : 'opacity-0 w-0 pointer-events-none'
@@ -154,55 +194,22 @@ export const AssignAccessPage = ({
                   <div>
                     <p className="font-bold text-slate-800 text-xs">{user.name}</p>
                   </div>
-                  <div className="text-[11px] text-slate-655 space-y-1">
+                  <div className="text-[11px] text-slate-655 space-y-2">
                     <p><strong className="font-semibold">Department:</strong> {user.department}</p>
-                  </div>
-                  <div className="border-t border-slate-100 pt-2 text-xs text-slate-600">
-                    <p>
-                      <strong className="font-semibold text-slate-500">Access Grants:</strong>{' '}
-                      <span className="font-medium text-slate-700">{user.grantCount || 0} times granted</span>
-                    </p>
-                  </div>
-                  <div className="pt-2">
-                    {user.isTemporaryAdmin ? (
-                      <div className="flex gap-2 w-full">
-                        <button
-                          onClick={() => {
-                            setGrantingTargetUserId(user.id);
-                            setGrantModalType('granted');
-                            setGrantModalOpen(true);
-                          }}
-                          className="flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center space-x-1 shadow-sm bg-slate-100 text-slate-700 hover:bg-slate-200"
-                        >
-                          <Settings className="h-3 w-3" />
-                          <span>Edit</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            revokeTemporaryAdmin(user.id);
-                            setGrantingTargetUserId(user.id);
-                            setGrantModalType('revoked');
-                            setGrantModalOpen(true);
-                          }}
-                          className="flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center space-x-1 shadow-sm bg-red-50 text-red-650 hover:bg-red-100/80"
-                        >
-                          <X className="h-3 w-3" />
-                          <span>Revoke</span>
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          setGrantingTargetUserId(user.id);
-                          setGrantModalType('granted');
-                          setGrantModalOpen(true);
+                    <div className="flex items-center gap-2">
+                      <strong className="font-semibold">Role:</strong>
+                      <select
+                        value={user.role}
+                        onChange={(e) => {
+                          if (e.target.value === 'Admin') handleAssign(user.id);
+                          else handleRevoke(user.id);
                         }}
-                        className="w-full py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center space-x-1 shadow-sm bg-emerald-600 text-white hover:bg-emerald-700"
+                        className="bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded p-1 outline-none focus:border-emerald-500 cursor-pointer"
                       >
-                        <ShieldCheck className="h-3 w-3" />
-                        <span>Grant Assessor Role</span>
-                      </button>
-                    )}
+                        <option value="Faculty">Faculty</option>
+                        <option value="Admin">Admin</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               );
@@ -214,10 +221,9 @@ export const AssignAccessPage = ({
           <table className="w-full border-collapse text-xs text-left">
             <thead>
               <tr className="bg-slate-50 text-slate-400 uppercase tracking-widest font-extrabold text-[9px] border-b border-slate-200">
-                <th className="p-4">Faculty Member</th>
-                <th className="p-4">Department</th>
-                <th className="p-4">Access Grants</th>
-                <th className="p-4 text-center">Action</th>
+                <th className="p-4 w-1/3">User Name</th>
+                <th className="p-4 w-1/2">Department</th>
+                <th className="p-4 w-1/6">Role</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -231,50 +237,21 @@ export const AssignAccessPage = ({
                         <p className="text-slate-700">{user.department}</p>
                       </td>
                       <td className="p-4">
-                        <p className="text-slate-700 font-medium">
-                          {user.grantCount || 0} times granted
-                        </p>
-                      </td>
-                      <td className="p-4 text-center">
-                        {user.isTemporaryAdmin ? (
-                          <div className="flex justify-center gap-2">
-                            <button
-                              onClick={() => {
-                                setGrantingTargetUserId(user.id);
-                                setGrantModalType('granted');
-                                setGrantModalOpen(true);
-                              }}
-                              className="px-3 py-1 text-xs font-bold rounded-lg transition-all flex items-center space-x-1 shadow-sm bg-slate-100 text-slate-700 hover:bg-slate-200"
-                            >
-                              <Settings className="h-3 w-3" />
-                              <span>Edit</span>
-                            </button>
-                            <button
-                              onClick={() => {
-                                revokeTemporaryAdmin(user.id);
-                                setGrantingTargetUserId(user.id);
-                                setGrantModalType('revoked');
-                                setGrantModalOpen(true);
-                              }}
-                              className="px-3 py-1 text-xs font-bold rounded-lg transition-all flex items-center space-x-1 shadow-sm bg-red-50 text-red-650 hover:bg-red-100/80"
-                            >
-                              <X className="h-3 w-3" />
-                              <span>Revoke</span>
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              setGrantingTargetUserId(user.id);
-                              setGrantModalType('granted');
-                              setGrantModalOpen(true);
-                            }}
-                            className="px-3 py-1 text-xs font-bold rounded-lg transition-all flex items-center mx-auto space-x-1 shadow-sm bg-emerald-600 text-white hover:bg-emerald-700"
-                          >
-                            <ShieldCheck className="h-3 w-3" />
-                            <span>Grant Assessor Role</span>
-                          </button>
-                        )}
+                        <select
+                          value={user.role}
+                          onChange={(e) => {
+                            if (e.target.value === 'Admin') handleAssign(user.id);
+                            else handleRevoke(user.id);
+                          }}
+                          className={`px-2 py-1 border rounded text-[11px] font-bold outline-none cursor-pointer ${
+                            user.role === 'Admin' 
+                              ? 'bg-emerald-50 border-emerald-200 text-emerald-800 focus:border-emerald-500' 
+                              : 'bg-slate-50 border-slate-200 text-slate-700 focus:border-slate-400'
+                          }`}
+                        >
+                          <option value="Faculty">Faculty</option>
+                          <option value="Admin">Admin</option>
+                        </select>
                       </td>
                     </tr>
                   );

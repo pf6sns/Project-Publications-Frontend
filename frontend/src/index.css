@@ -388,8 +388,8 @@ html {
 }
 
 html, body, aside, main, header, .glass-panel, div, p, span, h1, h2, h3, h4, h5, h6, table, tr, td, th, input, select, textarea, button, a {
-  transition-property: background-color, border-color, color, box-shadow, fill, stroke;
-  transition-duration: 0.5s;
+  transition-property: background-color, border-color, box-shadow, fill, stroke;
+  transition-duration: 0.3s;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -711,3 +711,23 @@ html, body, aside, main, header, .glass-panel, div, p, span, h1, h2, h3, h4, h5,
 }
 .animate-ham-open { animation: hamOpen 200ms ease-out both; }
 
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area, .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

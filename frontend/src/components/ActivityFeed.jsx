@@ -17,8 +17,8 @@ import {
   UploadCloud, 
   Trash2 
 } from 'lucide-react';
-import { downloadFile } from '../../fileStore';
-import { mockUsers } from '../../data';
+import { downloadFile } from '../fileStore';
+import { mockUsers } from '../data';
 
 export function TempAdminDashboard({
   publications,

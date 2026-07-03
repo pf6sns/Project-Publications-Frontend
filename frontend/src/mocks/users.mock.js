@@ -33,6 +33,14 @@ export const mockUsers = {
     department: 'Office of Dean (Research)',
     designation: 'Dean - Research & Development',
   },
+  DEV01: {
+    id: 'DEV01',
+    name: 'SNS Developer',
+    email: 'developer@snsgroups.com',
+    role: 'Developer',
+    department: 'IT Infrastructure',
+    designation: 'Senior Developer',
+  }
 };
 
 /**
@@ -42,6 +50,7 @@ export const mockUsers = {
 export const mockPasswords = {
   Faculty: 'faculty123',
   Admin: 'admin123',
+  Developer: 'developer123',
 };
 
 /**

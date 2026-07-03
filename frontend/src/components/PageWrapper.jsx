@@ -4,9 +4,9 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../hooks/useAuth';
-import { useRole } from '../../hooks/useRole';
-import { getPublications, submitPublication, evaluatePublication } from '../../services/publicationService';
+import { useAuth } from '../hooks/useAuth';
+import { useRole } from '../hooks/useRole';
+import { getPublications, submitPublication, evaluatePublication } from '../services/publicationService';
 import { Spinner } from './Spinner';
 
 export default function PageWrapper({ Component, additionalProps = {} }) {

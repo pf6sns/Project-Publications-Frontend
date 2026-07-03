@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Check } from 'lucide-react';
-import { Modal } from '../common/Modal';
+import { Modal } from './Modal';
 export function PublicationCategoryModal({ category, isOpen, onClose, onSave }) {
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');

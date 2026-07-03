@@ -5,7 +5,7 @@ export function InvoiceViewer({ invoice }) {
   if (!invoice) return null;
 
   return (
-    <div className="border border-platinum-silver rounded-2xl overflow-hidden bg-pure-white shadow-xs max-w-2xl mx-auto w-full font-sans">
+    <div className="border border-platinum-silver rounded-2xl overflow-hidden bg-pure-white shadow-xs max-w-2xl mx-auto w-full font-sans print-area">
       <div className="bg-ice-gray px-6 py-4 flex items-center justify-between border-b border-platinum-silver">
         <div className="flex items-center gap-2.5">
           <Receipt className="h-5 w-5 text-steel-gray" />
@@ -38,18 +38,6 @@ export function InvoiceViewer({ invoice }) {
           <div className="flex justify-between py-1.5 border-b border-platinum-silver/40">
             <span className="text-slate-gray font-bold text-xs uppercase tracking-wider">Transaction ID (Receipt)</span>
             <span className="font-bold text-charcoal font-mono text-xs">{invoice.receiptNumber}</span>
-          </div>
-          <div className="flex justify-between py-1.5 border-b border-platinum-silver/40">
-            <span className="text-slate-gray font-bold text-xs uppercase tracking-wider">Category</span>
-            <span className="font-bold text-charcoal text-right max-w-[60%]">{invoice.category}</span>
-          </div>
-          <div className="flex justify-between py-1.5 border-b border-platinum-silver/40">
-            <span className="text-slate-gray font-bold text-xs uppercase tracking-wider">Publication Title</span>
-            <span className="font-bold text-charcoal text-right max-w-[60%] truncate">{invoice.title}</span>
-          </div>
-          <div className="flex justify-between py-1.5 border-b border-platinum-silver/40">
-            <span className="text-slate-gray font-bold text-xs uppercase tracking-wider">Payment Status</span>
-            <span className="font-black text-emerald-600 uppercase tracking-widest text-xs">{invoice.paymentStatus}</span>
           </div>
         </div>
 

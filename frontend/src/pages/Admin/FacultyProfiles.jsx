@@ -1,25 +1,43 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Settings } from 'lucide-react';
 import { useFacultyList, useGlobalFields } from '../../hooks/useFaculty';
-import { FacultySearch } from '../../components/facultyProfile/FacultySearch';
-import { FacultyTable } from '../../components/facultyProfile/FacultyTable';
-import { ManageFieldsModal } from '../../components/facultyProfile/ManageFieldsModal';
+import { FacultySearch } from '../../components/FacultySearch';
+import { FacultyTable } from '../../components/FacultyTable';
+import { ManageFieldsModal } from '../../components/ManageFieldsModal';
+import { SearchableDropdown } from '../../components/SearchableDropdown';
 import { ProfilePage } from '../Shared/Profile';
 
+const INSTITUTION_OPTIONS = [
+  'All Institutions',
+  'SNSCT',
+  'SNSCE',
+  'SNSRCAS',
+  'SNSCAHS',
+  'SNSCNURSING',
+  'SNSCPHYSIO',
+  'SNSCPHS',
+  'DRSNSCEDU',
+  'SNSBSPINE',
+  'SNSACADEMY'
+];
+import { usePermissions } from '../../hooks/usePermissions';
+
 export function AdminFacultyProfilesPage() {
+  const { hasFeatureAccess } = usePermissions();
   const { data, loading, pagination, fetchFaculty } = useFacultyList();
   const { fields, fetchFields } = useGlobalFields();
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedInstitution, setSelectedInstitution] = useState(['All Institutions']);
   const [viewingFaculty, setViewingFaculty] = useState(null);
   const [isManageModalOpen, setIsManageModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchFaculty(1, 20, searchQuery);
+    fetchFaculty(1, 20, searchQuery, selectedInstitution);
     fetchFields();
-  }, [fetchFaculty, fetchFields, searchQuery]);
+  }, [fetchFaculty, fetchFields, searchQuery, selectedInstitution]);
 
   const handlePageChange = (newPage) => {
-    fetchFaculty(newPage, 20, searchQuery);
+    fetchFaculty(newPage, 20, searchQuery, selectedInstitution);
   };
 
   const handleSearch = (query) => {
@@ -63,19 +81,31 @@ export function AdminFacultyProfilesPage() {
     <div className="w-full max-w-7xl mx-auto space-y-6 animate-fade-in font-sans">
       <div className="flex flex-col md:flex-row md:items-center justify-end gap-4">
         <div className="flex items-center space-x-3">
-          <button
-            onClick={() => setIsManageModalOpen(true)}
-            className="inline-flex items-center px-4 py-2 bg-pure-white border border-platinum-silver text-charcoal text-sm font-bold rounded-xl hover:bg-slate-50 transition-colors shadow-xs"
-          >
-            <Settings className="w-4 h-4 mr-2 text-slate-gray" />
-            Manage Profile Fields
-          </button>
+          {hasFeatureAccess('manage_profile_fields') && (
+            <button
+              onClick={() => setIsManageModalOpen(true)}
+              className="inline-flex items-center px-4 py-2 bg-pure-white border border-platinum-silver text-charcoal text-sm font-bold rounded-xl hover:bg-slate-50 transition-colors shadow-xs"
+            >
+              <Settings className="w-4 h-4 mr-2 text-slate-gray" />
+              Manage Profile Fields
+            </button>
+          )}
         </div>
       </div>
 
       <div className="bg-pure-white p-4 rounded-2xl border border-platinum-silver shadow-xs">
-        <div className="mb-4">
+        <div className="mb-4 flex flex-col sm:flex-row sm:flex-wrap md:flex-nowrap items-start sm:items-center justify-between gap-3 w-full">
           <FacultySearch onSearch={handleSearch} />
+          
+          <div className="w-full sm:w-64 md:w-72 shrink-0 relative z-20">
+            <SearchableDropdown
+              options={INSTITUTION_OPTIONS}
+              value={selectedInstitution}
+              onChange={setSelectedInstitution}
+              placeholder="Search institution..."
+              isMulti={true}
+            />
+          </div>
         </div>
         
         <FacultyTable

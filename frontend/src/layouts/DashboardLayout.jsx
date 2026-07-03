@@ -19,13 +19,15 @@ import {
   Users
 } from 'lucide-react';
 
-import { SessionModal, LogoutConfirmationModal } from '../components/auth/index';
-import { ThemeToggle } from '../components/common/ThemeToggle';
-import snsLogo from '../assets/logos/sns-logo.png';
+import { SessionModal, LogoutConfirmationModal } from '../components/AuthModals';
+import { ThemeToggle } from '../components/ThemeToggle';
+import { NotificationPanel } from '../components/NotificationPanel';
+import snsLogo from '../assets/logos/app-logo.png';
 
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { useNotifications } from '../hooks/useNotifications';
+import { usePermissions } from '../hooks/usePermissions';
 
 export default function DashboardLayout() {
   const { currentUser, logout, users } = useAuth();
@@ -44,7 +46,14 @@ export default function DashboardLayout() {
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 
   useEffect(() => {
-    const handleResize = () => setIsSidebarCollapsed(window.innerWidth < 1024);
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        // On desktop, keep expanded by default; only collapse if user manually did so
+        // (We track this by checking if it was auto-collapsed)
+      } else {
+        setIsSidebarCollapsed(true);
+      }
+    };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -104,10 +113,13 @@ export default function DashboardLayout() {
     if (path.includes('/assign-access')) return 'Assign Access';
     if (path.includes('/upload')) return 'Upload Manuscript';
     if (path.includes('/publications')) return 'My Publications';
-    if (path.includes('/admin/faculty')) return 'Faculty Profiles';
+    if (path.includes('/faculty-profiles') || path.includes('/admin/faculty')) return 'Faculty Profiles';
+    if (path.includes('/developer/assign-role')) return 'Assign Role';
     if (path.includes('/profile')) return 'Profile';
     return 'RPMS System';
   };
+
+  const isDark = theme === 'dark';
 
   return (
     <div className="flex-1 flex flex-col lg:flex-row relative h-screen w-full overflow-hidden bg-white">
@@ -118,7 +130,7 @@ export default function DashboardLayout() {
         <div className="fixed inset-0 bg-charcoal/40 backdrop-blur-xs z-30 lg:hidden animate-fade-in" onClick={() => setIsSidebarCollapsed(true)} />
       )}
 
-      <aside className={`fixed inset-y-0 left-0 z-40 bg-ice-gray text-charcoal border-r border-platinum-silver p-5 flex flex-col justify-between select-none text-left shrink-0 transition-all duration-300 lg:relative lg:translate-x-0 lg:flex ${isSidebarCollapsed ? '-translate-x-full lg:w-24 px-3' : 'translate-x-0 lg:w-80 px-5'} h-screen lg:h-auto`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 bg-ice-gray text-charcoal border-r border-platinum-silver flex flex-col justify-between select-none text-left shrink-0 transition-all duration-300 lg:relative lg:translate-x-0 lg:flex ${isSidebarCollapsed ? '-translate-x-full lg:w-20 px-2' : 'translate-x-0 w-70 sm:w-72 lg:w-64 xl:w-72 px-4 sm:px-5'} h-screen lg:h-auto py-5`}>
         <div className="space-y-6 w-full flex flex-col items-center">
           <div onClick={() => { setIsSidebarCollapsed(!isSidebarCollapsed); setLogoPulse(true); setTimeout(() => setLogoPulse(false), 250); }} className={`flex items-center justify-between w-full cursor-pointer select-none ${isSidebarCollapsed ? 'justify-center' : 'space-x-3'}`}>
             <div className="flex items-center space-x-3">
@@ -133,6 +145,22 @@ export default function DashboardLayout() {
               <>
                 {renderSidebarButton('/faculty/upload', 'Upload Manuscript', Upload)}
                 {renderSidebarButton('/faculty/publications', 'My Publications', BookOpen)}
+
+                {/* Temporary Admin nav items — shown only if granted */}
+                {currentUser.isTemporaryAdmin && currentUser.granularPermissions?.pages?.length > 0 && (
+                  <>
+                    {/* Visual divider */}
+                    <div className={`border-t border-platinum-silver my-2 ${isSidebarCollapsed ? 'w-8 mx-auto' : 'w-full'}`} />
+                    {currentUser.granularPermissions.pages.includes('dashboard') && renderSidebarButton('/faculty/dashboard', 'Dashboard', LayoutDashboard)}
+                    {currentUser.granularPermissions.pages.includes('faculty_profiles') && renderSidebarButton('/faculty/faculty-profiles', 'Faculty Profiles', Users)}
+                    {currentUser.granularPermissions.pages.includes('queue') && renderSidebarButton('/faculty/queue', 'Submissions Queue', CheckSquare)}
+                    {currentUser.granularPermissions.pages.includes('assign_access') && renderSidebarButton('/faculty/assign-access', 'Assign Access', ShieldCheck)}
+                  </>
+                )}
+              </>
+            ) : currentUser.role === 'Developer' ? (
+              <>
+                {renderSidebarButton('/developer/assign-role', 'Assign Role', ShieldCheck)}
               </>
             ) : (
               <>
@@ -148,7 +176,7 @@ export default function DashboardLayout() {
         </div>
 
         <div className={`pt-4 border-t border-platinum-silver w-full ${isSidebarCollapsed ? 'flex flex-col items-center space-y-3' : 'space-y-3'}`}>
-          <div onClick={() => handleTabClick(currentUser.role === 'Admin' ? '/admin/profile' : '/faculty/profile')} className={`w-full p-2.5 rounded-xl flex items-center transition-all duration-300 cursor-pointer relative group ${isSidebarCollapsed ? 'justify-center' : 'space-x-3'} ${location.pathname.includes('/profile') ? 'bg-frost-gray text-charcoal border border-platinum-silver shadow-xs font-bold' : 'hover:bg-mist-silver/30 border border-transparent text-slate-gray hover:text-charcoal'}`}>
+          <div onClick={() => handleTabClick(currentUser.role === 'Admin' ? '/admin/profile' : currentUser.role === 'Developer' ? '/developer/profile' : '/faculty/profile')} className={`w-full p-2.5 rounded-xl flex items-center transition-all duration-300 cursor-pointer relative group ${isSidebarCollapsed ? 'justify-center' : 'space-x-3'} ${location.pathname.includes('/profile') ? 'bg-frost-gray text-charcoal border border-platinum-silver shadow-xs font-bold' : 'hover:bg-mist-silver/30 border border-transparent text-slate-gray hover:text-charcoal'}`}>
             <div className={`${isSidebarCollapsed ? 'h-9 w-9 text-base' : 'h-10 w-10 text-lg'} ${location.pathname.includes('/profile') ? 'bg-emerald-600 text-white' : 'bg-brushed-silver text-charcoal'} font-black flex items-center justify-center rounded-full shrink-0 transition-all shadow-xs`}>
               {currentUser.name.charAt(0) || 'U'}
             </div>
@@ -168,30 +196,20 @@ export default function DashboardLayout() {
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0 bg-slate-50 overflow-hidden">
-        <header className="bg-white border-b border-slate-200 px-4 py-3 md:px-6 md:py-4 flex items-center justify-between shadow-xs select-none sticky top-0 z-20">
+        <header className={`px-4 py-3 md:px-6 md:py-4 flex items-center justify-between shadow-xs select-none sticky top-0 z-40 ${isDark ? 'bg-slate-900 border-b border-slate-800' : 'bg-white border-b border-slate-200'}`}>
           <div className="flex items-center gap-3 text-left">
-            <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="lg:hidden p-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all duration-200 shrink-0 cursor-pointer"><Menu className="h-5 w-5 animate-ham-open" /></button>
-            <h1 className="text-sm sm:text-base md:text-lg font-black text-slate-900 font-serif leading-none tracking-tight">
+            <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className={`lg:hidden p-2 rounded-xl transition-all duration-200 shrink-0 cursor-pointer ${isDark ? 'bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white' : 'bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900'}`}><Menu className="h-5 w-5 animate-ham-open" /></button>
+            <h1 className={`text-sm sm:text-base md:text-lg font-black font-serif leading-none tracking-tight ${isDark ? 'text-slate-50' : 'text-slate-900'}`}>
               {getPageTitle()}
             </h1>
           </div>
           <div className="flex items-center space-x-3">
             <ThemeToggle theme={theme} onToggle={toggleTheme} />
-            <button 
-              onClick={markAllRead}
-              className="p-2.5 rounded-xl transition-all duration-300 relative border flex items-center justify-center cursor-pointer bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-            >
-              <Bell className="h-5 w-5" />
-              {activeUnreadNotifsCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                  {activeUnreadNotifsCount > 9 ? '9+' : activeUnreadNotifsCount}
-                </span>
-              )}
-            </button>
+            {currentUser.role !== 'Developer' && <NotificationPanel />}
           </div>
         </header>
-        <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
-          <div className="w-full max-w-[1600px] mx-auto space-y-4 sm:space-y-5 md:space-y-6">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8 min-w-0">
+          <div className="w-full max-w-[1600px] mx-auto space-y-4 sm:space-y-5 md:space-y-6 min-w-0">
             <Outlet />
           </div>
         </div>

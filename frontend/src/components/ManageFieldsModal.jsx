@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { X, Plus, Edit2, LayoutList } from 'lucide-react';
-import { useGlobalFields } from '../../hooks/useFaculty';
+import { useGlobalFields } from '../hooks/useFaculty';
 import { FieldEditor } from './FieldEditor';
-import { Modal } from '../common/Modal';
+import { Modal } from './Modal';
 
 export function ManageFieldsModal({ isOpen, onClose }) {
   const { fields, loading, fetchFields, addField, deleteField } = useGlobalFields();

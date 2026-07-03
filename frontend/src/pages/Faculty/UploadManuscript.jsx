@@ -9,13 +9,15 @@ import { useUploadManuscript } from '../../hooks/useUploadManuscript';
 import { usePayment } from '../../hooks/usePayment';
 import { useInvoice } from '../../hooks/useInvoice';
 
-import { PublicationCategoryGrid } from '../../components/publication/PublicationCategoryGrid';
-import { PublicationCategoryModal } from '../../components/publication/PublicationCategoryModal';
-import { PublicationUploadForm } from '../../components/publication/PublicationUploadForm';
-import { PaymentSummary } from '../../components/publication/PaymentSummary';
-import { InvoiceReceipt } from '../../components/publication/InvoiceReceipt';
+import { PublicationCategoryGrid } from '../../components/PublicationCategoryGrid';
+import { PublicationCategoryModal } from '../../components/PublicationCategoryModal';
+import { PublicationUploadForm } from '../../components/PublicationUploadForm';
+import { PaymentSummary } from '../../components/PaymentSummary';
+import { InvoiceReceipt } from '../../components/InvoiceReceipt';
+import { usePermissions } from '../../hooks/usePermissions';
 
 export const UploadPage = ({ currentUser, onSuccess }) => {
+  const { hasFeatureAccess } = usePermissions();
   const isAdmin = currentUser.role === 'Admin';
 
   const {
@@ -98,7 +100,7 @@ export const UploadPage = ({ currentUser, onSuccess }) => {
           fileObject: publicationDetails.rawFile
         });
       }
-      nextStep();
+      goToStep(4);
     }
   };
 
@@ -117,7 +119,9 @@ export const UploadPage = ({ currentUser, onSuccess }) => {
           ) : (
             <PublicationCategoryGrid 
               categories={categories}
-              isAdmin={isAdmin}
+              canCreate={hasFeatureAccess('create_category')}
+              canEdit={hasFeatureAccess('edit')}
+              canDelete={hasFeatureAccess('delete')}
               onSelectCategory={selectCategory}
               onEditCategory={handleOpenModal}
               onDeleteCategory={handleDeleteCategory}

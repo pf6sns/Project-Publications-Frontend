@@ -9,6 +9,7 @@
 import React, { createContext, useContext } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { updateUserRecord } from '../api/authApi';
+import { addNotification } from '../api/notificationApi';
 
 const RoleContext = createContext();
 
@@ -37,6 +38,17 @@ export const RoleProvider = ({ children }) => {
     // Persist to storage so faculty sees the grant after login/reload
     await updateUserRecord(userId, updatedUser);
 
+    // Push an in-app notification for the faculty member
+    await addNotification({
+      id: 'NOT-' + Math.floor(10000 + Math.random() * 90000),
+      userId,
+      title: 'Temporary Admin Access Granted',
+      message: `You have been granted temporary admin access with pages: ${permissions.pages.join(', ')}.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'access_granted',
+    });
+
     setUsers(prev => ({ ...prev, [userId]: updatedUser }));
 
     // If this faculty is currently logged in, update their live session too
@@ -64,6 +76,17 @@ export const RoleProvider = ({ children }) => {
 
     // Persist to storage
     await updateUserRecord(userId, updatedUser);
+
+    // Push an in-app notification for the faculty member
+    await addNotification({
+      id: 'NOT-' + Math.floor(10000 + Math.random() * 90000),
+      userId,
+      title: 'Temporary Admin Access Revoked',
+      message: 'Your temporary admin access has been revoked. All admin features have been removed.',
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'access_revoked',
+    });
 
     setUsers(prev => ({ ...prev, [userId]: updatedUser }));
 
