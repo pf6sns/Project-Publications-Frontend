@@ -1,0 +1,12 @@
+# macOS metadata
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnail cache
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
