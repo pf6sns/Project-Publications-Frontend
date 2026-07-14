@@ -1,9 +1,9 @@
 pipeline {
     agent any
     tools {
-        nodejs "NodeJS_18"
+        nodejs "NodeJS_20"
     }
-    environment {   
+    environment {
         AWS_REGION = "ap-south-1"
         S3_BUCKET  = "publications.snsihub.ai"
         CLOUDFRONT_DISTRIBUTION_ID = "E17RWJDWEYRP48"
@@ -21,7 +21,8 @@ pipeline {
             steps {
                 dir('frontend') {
                     sh '''
-                    npm install
+                    rm -rf node_modules
+                    npm ci || npm install
                     '''
                 }
             }
