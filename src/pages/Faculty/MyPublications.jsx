@@ -5,6 +5,7 @@ import { DateRangePicker } from '../../components/DateRangePicker';
 import { SearchableDropdown } from '../../components/SearchableDropdown';
 import { getMyPublications, getPublicationDetail } from '../../services/publicationService';
 import { downloadFromUrl } from '../../services/uploadService';
+import { getAbsolutePdfUrl } from '../../api/apiClient';
 
 export const PublicationsPage = ({
   currentUser,
@@ -401,7 +402,7 @@ export const PublicationsPage = ({
                       {target.manuscriptUrl ? (
                         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
                           <a
-                            href={target.manuscriptUrl}
+                            href={getAbsolutePdfUrl(target.manuscriptUrl)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="py-2 px-4 text-xs font-bold rounded-lg flex items-center justify-center space-x-1.5 cursor-pointer shadow-xs active:scale-98 transition-all shrink-0 w-full sm:w-auto bg-slate-200 hover:bg-slate-300 text-slate-700"
@@ -431,7 +432,7 @@ export const PublicationsPage = ({
                         </div>
                         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto shrink-0">
                           <a
-                            href={target.reviewUrl}
+                            href={getAbsolutePdfUrl(target.reviewUrl)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="py-2 px-4 text-xs font-bold rounded-lg flex items-center justify-center space-x-1.5 cursor-pointer shadow-xs active:scale-98 transition-all shrink-0 w-full sm:w-auto bg-slate-200 hover:bg-slate-300 text-slate-700"

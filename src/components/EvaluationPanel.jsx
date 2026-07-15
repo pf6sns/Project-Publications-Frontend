@@ -39,10 +39,20 @@ export function AdminReviews({
     setViewLoading(type);
     try {
       const token = localStorage.getItem('rpms_token');
-      const response = await fetch(
-        `${config.apiBaseUrl}/download-proxy?url=${encodeURIComponent(url)}&filename=preview.pdf`,
-        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
-      );
+      const isProxyUrl = url.startsWith('/') || url.includes('/api/pdf/');
+      let fetchUrl;
+      if (isProxyUrl) {
+        const relativePath = url.startsWith('/') ? url : new URL(url).pathname;
+        const origin = new URL(config.apiBaseUrl).origin;
+        fetchUrl = `${origin}${relativePath}`;
+      } else {
+        fetchUrl = `${config.apiBaseUrl}/download-proxy?url=${encodeURIComponent(url)}&filename=preview.pdf`;
+      }
+
+      const response = await fetch(fetchUrl, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: 'include'
+      });
       if (!response.ok) throw new Error(`Status ${response.status}`);
       const raw = await response.blob();
 

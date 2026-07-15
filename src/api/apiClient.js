@@ -97,3 +97,14 @@ export const getFriendlyErrorMessage = (err) => {
 
   return err.message || 'An unexpected error occurred. Please try again.';
 };
+
+export const getAbsolutePdfUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  try {
+    const origin = new URL(config.apiBaseUrl).origin;
+    return `${origin}${url.startsWith('/') ? url : '/' + url}`;
+  } catch (e) {
+    return url;
+  }
+};
