@@ -11,6 +11,8 @@ import PageWrapper from '../components/PageWrapper';
 import { useAuth } from '../hooks/useAuth';
 import NotFound from '../pages/Auth/NotFound';
 import Maintenance from '../pages/Auth/Maintenance';
+import TermsAndConditions from '../pages/Auth/TermsAndConditions';
+import PrivacyPolicy from '../pages/Auth/PrivacyPolicy';
 import config from '../config';
 
 // Set to true to put the application in Maintenance Mode; false for normal operation.
@@ -132,6 +134,10 @@ export default function AppRoutes() {
           <Route path="/developer/profile" element={<PageWrapper Component={ProfilePage} />} />
         </Route>
       </Route>
+
+      {/* Public Legal Routes */}
+      <Route path="/terms" element={<TermsAndConditions />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
 
       {/* Standalone 404 NotFound Route */}
       <Route path="*" element={<NotFound />} />

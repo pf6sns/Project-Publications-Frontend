@@ -15,7 +15,8 @@ import {
   BarChart,
   Layers,
   Search,
-  Settings
+  Settings,
+  Mail,
 } from 'lucide-react';
 import rpmsLogo from '../../assets/logos/app-logo.png';
 import BlurText from '../../components/BlurText';
@@ -486,8 +487,8 @@ export default function LandingPage() {
       <div className={`min-h-screen overflow-x-hidden ${isDark ? 'bg-[#0a0a0a] text-slate-200' : 'bg-slate-50 text-slate-800'}`}>
 
         {/* Background Effects */}
-        <div className="absolute top-0 left-0 w-full h-[100vh] pointer-events-none z-0 overflow-hidden">
-          <div className={`absolute inset-0 bg-gradient-to-br ${isDark ? 'from-emerald-900/10 via-[#0a0a0a] to-blue-900/10' : 'from-emerald-100/40 via-slate-50 to-blue-100/40'}`} />
+        <div className="absolute top-0 left-0 w-full h-screen pointer-events-none z-0 overflow-hidden">
+          <div className={`absolute inset-0 bg-linear-to-br ${isDark ? 'from-emerald-900/10 via-[#0a0a0a] to-blue-900/10' : 'from-emerald-100/40 via-slate-50 to-blue-100/40'}`} />
           <div className="absolute inset-0 opacity-[0.03] bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0wIDBoNDB2NDBIMHoiIGZpbGw9Im5vbmUiLz4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0iIzAwMCIvPgo8L3N2Zz4=')] bg-repeat" />
           <motion.div
             animate={{ y: [0, -20, 0], opacity: [0.5, 0.8, 0.5] }}
@@ -497,7 +498,7 @@ export default function LandingPage() {
           <motion.div
             animate={{ y: [0, 30, 0], opacity: [0.3, 0.6, 0.3] }}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-            className={`absolute bottom-0 left-1/4 w-[500px] h-[500px] rounded-full blur-[150px] ${isDark ? 'bg-blue-900/10' : 'bg-blue-300/20'}`}
+            className={`absolute bottom-0 left-1/4 w-125 h-125 rounded-full blur-[150px] ${isDark ? 'bg-blue-900/10' : 'bg-blue-300/20'}`}
           />
         </div>
 
@@ -559,7 +560,7 @@ export default function LandingPage() {
                   delay={50}
                   animateBy="words"
                   direction="bottom"
-                  className="justify-center text-center mt-2 sm:mt-4 text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-blue-500 pb-2"
+                  className="justify-center text-center mt-2 sm:mt-4 text-transparent bg-clip-text bg-linear-to-r from-emerald-500 to-blue-500 pb-2"
                 />
               </motion.div>
 
@@ -649,7 +650,7 @@ export default function LandingPage() {
                     glareSize={250}
                     transitionDuration={1500}
                     className={`h-full transition-shadow hover:shadow-xl backdrop-blur-sm ${isDark
-                        ? 'hover:bg-white/[0.05] hover:border-emerald-500/30'
+                        ? 'hover:bg-white/5 hover:border-emerald-500/30'
                         : 'hover:border-emerald-200'
                       }`}
                   >
@@ -667,7 +668,7 @@ export default function LandingPage() {
           </section>
 
           {/* Workflow */}
-          <section className={`py-24 ${isDark ? 'bg-white/[0.02]' : 'bg-slate-900/[0.02]'}`}>
+          <section className={`py-24 ${isDark ? 'bg-white/2' : 'bg-slate-900/2'}`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -695,10 +696,10 @@ export default function LandingPage() {
                       whileInView={{ opacity: 1, scale: 1 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.4, delay: i * 0.15 }}
-                      className="flex flex-col items-center text-center max-w-[140px]"
+                      className="flex flex-col items-center text-center max-w-35"
                     >
                       <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 shadow-lg z-10 relative ${isDark
-                          ? 'bg-[#121212] border border-white/10 text-emerald-450'
+                          ? 'bg-graphite border border-white/10 text-emerald-450'
                           : 'bg-white border border-slate-200 text-emerald-600'
                         }`}>
                         <step.icon size={24} />
@@ -728,18 +729,71 @@ export default function LandingPage() {
         </main>
 
         {/* Footer */}
-        <footer className={`border-t py-12 transition-colors ${isDark ? 'bg-[#050505] border-white/5' : 'bg-slate-50 border-slate-200'}`}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <img src={rpmsLogo} alt="RPMS Logo" className="h-8 w-auto object-contain" />
-              <div className="flex flex-col">
-                <span className={`font-bold text-lg ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>SNS Groups Research Publication Management System</span>
-                {/* <span className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>Research Publication Management System</span> */}
+        <footer className={`relative border-t transition-colors ${isDark ? 'bg-[#0a0a0a] border-white/5' : 'bg-slate-50 border-slate-200'}`}>
+          {/* Emerald gradient accent line at top — matches page theme */}
+          <div className={`h-px w-full bg-linear-to-r from-transparent via-emerald-500 to-transparent opacity-50`} />
+
+          {/* Main footer content */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-8">
+            <div className="flex flex-col md:flex-row items-start justify-between gap-10">
+
+              {/* Brand Column */}
+              <div className="flex flex-col gap-4 max-w-xs">
+                <div className="flex items-center gap-3">
+                  <img src={rpmsLogo} alt="RPMS Logo" className="h-9 w-auto object-contain" />
+                  <div className="flex flex-col">
+                    <span className={`font-bold text-sm leading-tight ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+                      SNS Groups
+                    </span>
+                    <span className={`text-xs ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                      Research Publication Management System
+                    </span>
+                  </div>
+                </div>
+                <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                  Empowering SNS faculty to manage, track, and showcase research publications with ease.
+                </p>
+                <div className={`flex items-center gap-2 text-sm ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
+                  <Mail size={13} className="text-emerald-500" />
+                  <span>support@snsgroups.com</span>
+                </div>
               </div>
+
+              {/* Legal Column */}
+              <div className="flex flex-col gap-4">
+                <h4 className={`text-xs font-semibold uppercase tracking-widest ${isDark ? 'text-emerald-500' : 'text-emerald-600'}`}>Legal</h4>
+                <ul className="flex flex-col gap-3">
+                  <li>
+                    <Link
+                      to="/terms"
+                      className={`flex items-center gap-2 text-sm transition-colors group ${isDark ? 'text-slate-400 hover:text-emerald-400' : 'text-slate-500 hover:text-emerald-600'}`}
+                    >
+                      <FileText size={13} className={`transition-colors ${isDark ? 'text-emerald-600 group-hover:text-emerald-400' : 'text-emerald-500 group-hover:text-emerald-600'}`} />
+                      Terms &amp; Conditions
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/privacy"
+                      className={`flex items-center gap-2 text-sm transition-colors group ${isDark ? 'text-slate-400 hover:text-emerald-400' : 'text-slate-500 hover:text-emerald-600'}`}
+                    >
+                      <Shield size={13} className={`transition-colors ${isDark ? 'text-emerald-600 group-hover:text-emerald-400' : 'text-emerald-500 group-hover:text-emerald-600'}`} />
+                      Privacy Policy
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+
             </div>
 
-            <div className={`text-sm ${isDark ? 'text-slate-500' : 'text-slate-500'}`}>
-              &copy; {new Date().getFullYear()} SNS Groups . All rights reserved.
+            {/* Bottom bar */}
+            <div className={`mt-10 pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-3 ${isDark ? 'border-white/5' : 'border-slate-200'}`}>
+              <p className={`text-xs ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
+                &copy; {new Date().getFullYear()} SNS Groups. All rights reserved.
+              </p>
+              <p className={`text-xs ${isDark ? 'text-slate-700' : 'text-slate-400'}`}>
+                Built with ❤️ for SNS Faculty
+              </p>
             </div>
           </div>
         </footer>
