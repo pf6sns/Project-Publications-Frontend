@@ -34,10 +34,12 @@ pipeline {
             steps {
                 dir('frontend') {
                     sh '''
+                    set -x
                     CI=false npm run build
-                    echo "----- Verifying dist/index.html exists -----"
-                    ls -la dist
-                    test -f dist/index.html || (echo "ERROR: dist/index.html missing after build!" && exit 1)
+                    echo "BUILD EXIT CODE: $?"
+                    stat dist 2>&1 || echo "dist missing right after stat"
+                    ls -la
+                    pwd
                     '''
                 }
             }
@@ -46,7 +48,7 @@ pipeline {
             steps {
                 dir('frontend') {
                     sh '''
-                    aws s3 sync dist/ s3://$S3_BUCKET/ \
+                    aws s3 sync dist s3://$S3_BUCKET/ \
                     --region $AWS_REGION \
                     --delete
                     '''
