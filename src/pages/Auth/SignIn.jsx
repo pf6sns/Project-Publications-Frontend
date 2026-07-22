@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { useTheme } from '../../context/ThemeContext';
+
 import { Key, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import snsLogo from '../../assets/logos/app-logo.png';
 
@@ -22,10 +22,17 @@ export default function SignIn() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
-  const { theme } = useTheme();
   const navigate = useNavigate();
 
-  const isDark = theme === 'dark';
+  // Force light mode — strip 'dark' class from <html> while this page is mounted
+  useEffect(() => {
+    const root = document.documentElement;
+    const wasDark = root.classList.contains('dark');
+    root.classList.remove('dark');
+    return () => { if (wasDark) root.classList.add('dark'); };
+  }, []);
+
+  const isDark = false;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -214,22 +221,12 @@ export default function SignIn() {
 
             {/* Password field */}
             <div className="space-y-1.5 animate-fade-up-d2">
-              <div className="flex justify-between items-center ml-1">
-                <label
-                  className="text-[10px] font-bold uppercase tracking-[0.15em]"
-                  style={{ color: isDark ? '#475569' : '#94a3b8' }}
-                >
-                  Password
-                </label>
-                <a
-                  href="https://app.okrion.ai/forgot-password"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[10px] font-bold uppercase tracking-[0.05em] text-emerald-600 hover:text-emerald-700 transition-colors"
-                >
-                  Forgot password?
-                </a>
-              </div>
+              <label
+                className="block text-[10px] font-bold uppercase tracking-[0.15em] ml-1"
+                style={{ color: isDark ? '#475569' : '#94a3b8' }}
+              >
+                Password
+              </label>
               <div className="relative">
                 <input
                   id="signin-password"
@@ -251,7 +248,18 @@ export default function SignIn() {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              <div className="flex justify-end">
+                <a
+                  href="https://app.okrion.ai/forgot-password"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] font-bold uppercase tracking-[0.05em] text-emerald-600 hover:text-emerald-700 transition-colors"
+                >
+                  Forgot password?
+                </a>
+              </div>
             </div>
+
 
             {/* Submit button */}
             <div className="animate-fade-up-d3 pt-2">

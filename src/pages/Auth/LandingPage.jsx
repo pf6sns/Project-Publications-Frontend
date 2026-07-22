@@ -1,7 +1,7 @@
 import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { useTheme } from '../../context/ThemeContext';
+
 import {
   FileText,
   Activity,
@@ -562,8 +562,15 @@ function TiltCard({ children, className = '' }) {
 }
 
 export default function LandingPage() {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const isDark = false;
+
+  // Force light mode — strip 'dark' class from <html> while this page is mounted
+  useEffect(() => {
+    const root = document.documentElement;
+    const wasDark = root.classList.contains('dark');
+    root.classList.remove('dark');
+    return () => { if (wasDark) root.classList.add('dark'); };
+  }, []);
   const [scrolled, setScrolled] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
 
