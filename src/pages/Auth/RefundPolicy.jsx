@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import rpmsLogo from '../../assets/logos/app-logo.png';
@@ -65,7 +65,16 @@ const Divider = ({ isDark }) => (
 );
 
 export default function RefundPolicy() {
-  const { isDark } = useTheme();
+  // Force light theme on this page regardless of global theme
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const root = document.documentElement;
+    const wasDark = root.classList.contains('dark');
+    root.classList.remove('dark');
+    return () => { if (wasDark) root.classList.add('dark'); };
+  }, []);
+
+  const isDark = false;
 
   return (
     <div className={`min-h-screen transition-colors ${isDark ? 'bg-[#050505] text-slate-200' : 'bg-white text-slate-800'}`}>

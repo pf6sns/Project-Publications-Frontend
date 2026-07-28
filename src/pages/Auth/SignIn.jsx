@@ -7,12 +7,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
-import { Key, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Key, ArrowRight, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import snsLogo from '../../assets/logos/app-logo.png';
 
 /* ─── Floating orb decoration ─────────────────────────────────────────────── */
-function Orb({ className }) {
-  return <div className={`absolute rounded-full pointer-events-none ${className}`} />;
+function Orb({ className, style }) {
+  return <div className={`absolute rounded-full pointer-events-none ${className}`} style={style} />;
 }
 
 export default function SignIn() {
@@ -77,39 +77,152 @@ export default function SignIn() {
   return (
     <div className="relative w-full min-h-screen flex items-center justify-center overflow-hidden p-4 sm:p-6 lg:p-8">
 
-      {/* ── Animated background ──────────────────────────────────────────── */}
-      <div
-        className="absolute inset-0 transition-colors duration-700"
+      {/* ── Back to Home Button ───────────────────────────────────────────── */}
+      <button
+        onClick={() => navigate('/')}
+        className="absolute top-5 left-5 sm:top-7 sm:left-8 z-30 inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all duration-300 hover:scale-105 active:scale-95 group cursor-pointer"
         style={{
-          background: isDark
-            ? 'linear-gradient(135deg, #0a0a0a 0%, #121212 40%, #1a1a1a 70%, #0a0a0a 100%)'
-            : 'linear-gradient(135deg, #e8edf5 0%, #dde4f0 40%, #e4e8f8 70%, #edf0fa 100%)',
+          background: 'rgba(255,255,255,0.75)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.9)',
+          boxShadow: '0 4px 16px rgba(5,150,105,0.15), 0 1px 4px rgba(0,0,0,0.06)',
+          color: '#0f172a',
+        }}
+      >
+        <ArrowLeft size={14} className="text-emerald-600 group-hover:-translate-x-0.5 transition-transform duration-300" />
+        <span className="tracking-wide">Back to Home</span>
+      </button>
+
+      {/* ══ WARM COASTAL BREEZE & BEACH WAVES BACKGROUND SYSTEM ════════════ */}
+
+      {/* Layer 1 — Coastal Sky & Ocean Horizon Base Gradient */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'linear-gradient(180deg, #F8FFF9 0%, #EAFBF3 35%, #D4F6E7 68%, #C7F3E2 100%)',
         }}
       />
 
-      {/* Mesh hex pattern overlay */}
-      <div className="absolute inset-0 hex-grid opacity-60 pointer-events-none" />
-
-      {/* Animated orbs */}
-      <Orb className={`w-120 h-120 -top-30 -left-20 animate-float-slow
-        ${isDark
-          ? 'bg-emerald-900/10 blur-[100px]'
-          : 'bg-indigo-200/50 blur-[90px]'}`}
-      />
-      <Orb className={`w-90 h-90 -bottom-20 -right-15 animate-float-med
-        ${isDark
-          ? 'bg-slate-800/30 blur-[90px]'
-          : 'bg-violet-200/40 blur-[80px]'}`}
-      />
-      <Orb className={`w-55 h-55 top-[30%] right-[10%] animate-float-fast
-        ${isDark
-          ? 'bg-emerald-900/10 blur-[70px]'
-          : 'bg-blue-200/35 blur-[60px]'}`}
+      {/* Layer 2 — Warm Sunlight Horizon Glow (Top-Right Warm Bloom) */}
+      <div
+        className="absolute w-200 h-200 pointer-events-none"
+        style={{
+          top: '-25%', right: '-15%',
+          background: 'radial-gradient(circle, rgba(255,251,235,0.7) 0%, rgba(212,246,231,0.4) 45%, transparent 75%)',
+          filter: 'blur(160px)',
+          animation: 'sun-shimmer 12s ease-in-out infinite',
+        }}
       />
 
+      {/* Layer 3 — Gentle Rolling Shoreline Ocean Waves */}
+      <div className="absolute inset-x-0 bottom-0 h-[50vh] overflow-hidden pointer-events-none z-0 opacity-70">
+        {/* Wave 1: Deep Ocean Tide Wave */}
+        <svg
+          className="absolute bottom-0 w-[140%] left-[-20%] h-80 text-[#62D8AF]/25"
+          style={{ animation: 'tide-swell-1 18s ease-in-out infinite' }}
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+        >
+          <path fill="currentColor" d="M0,160 C320,240 420,80 720,160 C1020,240 1120,90 1440,160 L1440,320 L0,320 Z" />
+        </svg>
 
+        {/* Wave 2: Mid-Sea Aqua Tide Wave */}
+        <svg
+          className="absolute bottom-0 w-[140%] left-[-10%] h-70 text-[#7DDDC1]/35"
+          style={{ animation: 'tide-swell-2 24s 2s ease-in-out infinite' }}
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+        >
+          <path fill="currentColor" d="M0,192 C280,110 520,240 800,160 C1080,80 1280,210 1440,140 L1440,320 L0,320 Z" />
+        </svg>
+
+        {/* Wave 3: Light Foam Tide Crest */}
+        <svg
+          className="absolute bottom-0 w-[140%] left-[-15%] h-57.5 text-[#A7ECD2]/45"
+          style={{ animation: 'tide-swell-1 20s 4s ease-in-out infinite' }}
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+        >
+          <path fill="currentColor" d="M0,224 C360,160 600,260 920,180 C1240,100 1360,220 1440,192 L1440,320 L0,320 Z" />
+        </svg>
+
+        {/* Wave 4: Glistening White Surface Wave Foam */}
+        <svg
+          className="absolute bottom-0 w-[140%] left-[-5%] h-45 text-[#F6FFF9]/60"
+          style={{ animation: 'tide-swell-2 26s 1s ease-in-out infinite' }}
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+        >
+          <path fill="currentColor" d="M0,256 C400,200 680,270 960,220 C1240,170 1380,240 1440,230 L1440,320 L0,320 Z" />
+        </svg>
+      </div>
+
+      {/* Layer 4 — Warm Soft Sunbeams (Coastal Sunlight Rays) */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          top: '-10%', right: '5%',
+          width: '450px', height: '130vh',
+          background: 'linear-gradient(135deg, rgba(255,251,235,0.2) 0%, rgba(212,246,231,0.08) 50%, transparent 80%)',
+          filter: 'blur(35px)',
+          transformOrigin: 'top right',
+          animation: 'light-ray-slow 35s ease-in-out infinite alternate',
+        }}
+      />
+
+      {/* Layer 5 — Gentle Coastal Warm Breeze Particle Drift (Floating sideways across viewport) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
+        {[
+          { top: '15%', size: 4, duration: '16s', delay: '0s' },
+          { top: '28%', size: 3, duration: '20s', delay: '3s' },
+          { top: '42%', size: 5, duration: '14s', delay: '6s' },
+          { top: '55%', size: 3, duration: '22s', delay: '2s' },
+          { top: '68%', size: 4, duration: '18s', delay: '8s' },
+          { top: '78%', size: 3, duration: '24s', delay: '4s' },
+          { top: '22%', size: 4, duration: '19s', delay: '11s' },
+          { top: '36%', size: 3, duration: '23s', delay: '7s' },
+          { top: '62%', size: 5, duration: '15s', delay: '13s' },
+          { top: '84%', size: 4, duration: '21s', delay: '9s' },
+          { top: '10%', size: 3, duration: '17s', delay: '14s' },
+          { top: '48%', size: 4, duration: '25s', delay: '5s' },
+          { top: '73%', size: 3, duration: '18s', delay: '12s' },
+        ].map((breeze, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full bg-white/90 shadow-[0_0_10px_rgba(255,251,235,0.9)]"
+            style={{
+              width: `${breeze.size}px`,
+              height: `${breeze.size}px`,
+              top: breeze.top,
+              animation: `breeze-flow ${breeze.duration} ${breeze.delay} linear infinite`,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Layer 6 — Ambient Warm Soft Glow behind Card */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle at 50% 48%, rgba(255,253,245,0.85) 0%, rgba(248,255,249,0.4) 55%, transparent 75%)',
+        }}
+      />
+
+      {/* Layer 7 — Ultra-Light Noise Overlay (1% opacity) */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+          backgroundSize: '150px 150px',
+          opacity: 0.01,
+          mixBlendMode: 'multiply',
+        }}
+      />
 
       {/* ── Glass card ───────────────────────────────────────────────────── */}
+
+
       <div
         className="relative z-10 w-full max-w-sm sm:max-w-md animate-card-entrance rounded-3xl"
         style={{
@@ -126,10 +239,6 @@ export default function SignIn() {
             : '0 32px 80px rgba(100,116,139,0.18), 0 0 0 1px rgba(255,255,255,0.6), inset 0 1px 0 rgba(255,255,255,0.9)',
         }}
       >
-        {/* Shimmer top edge — own overflow-hidden so it clips to rounded corners */}
-        <div className="h-0.5 w-full overflow-hidden rounded-t-3xl">
-          <div className="h-full w-full gradient-strip opacity-60" />
-        </div>
 
         {/* ── Header brand section ─────────────────────────────────────── */}
         <div className="pt-8 pb-6 px-8 text-center relative">
@@ -253,7 +362,7 @@ export default function SignIn() {
                   href="https://app.okrion.ai/forgot-password"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[10px] font-bold uppercase tracking-[0.05em] text-emerald-600 hover:text-emerald-700 transition-colors"
+                  className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 hover:text-emerald-700 transition-colors"
                 >
                   Forgot password?
                 </a>
@@ -306,7 +415,7 @@ export default function SignIn() {
             className="mt-6 text-center text-xs font-semibold animate-fade-up-d4"
             style={{ color: isDark ? '#94a3b8' : '#475569' }}
           >
-            Use Okrion Credentials
+            Use OKRion Credentials
           </p>
         </div>
       </div>

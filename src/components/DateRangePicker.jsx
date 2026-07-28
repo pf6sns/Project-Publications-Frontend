@@ -214,7 +214,7 @@ export const DateRangePicker = ({ startDate, endDate, onChange }) => {
 
       {isOpen && (
         <div
-          className="absolute right-0 top-[calc(100%+6px)] z-[9999] bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden animate-fade-in flex flex-col min-w-max"
+          className="absolute right-0 top-[calc(100%+6px)] z-9999 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden animate-fade-in flex flex-col min-w-max"
         >
           <div className="flex flex-col md:flex-row justify-center items-center w-full divide-y md:divide-y-0 md:divide-x divide-slate-100">
             {renderCalendar(currentDate1, setCurrentDate1)}
