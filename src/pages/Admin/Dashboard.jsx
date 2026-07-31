@@ -66,6 +66,7 @@ export default function DashboardPage() {
             results.forEach(r => {
               (r.publicationStatus || []).forEach(entry => {
                 const key = entry.status;
+                if (key?.toLowerCase() === 'draft') return;
                 if (!statusMap[key]) statusMap[key] = { ...entry, count: 0 };
                 statusMap[key].count = (statusMap[key].count || 0) + Number(entry.count || 0);
               });
@@ -93,7 +94,7 @@ export default function DashboardPage() {
   const pendingCount = dashboardData?.pending ?? 0;
   const totalCount = dashboardData?.totalPublications ?? 0;
   const totalRevenue = dashboardData?.totalRevenue ?? 0;
-  const publications = dashboardData?.publications ?? [];
+  const publications = (dashboardData?.publications ?? []).filter(p => p.status?.toLowerCase() !== 'draft');
 
   return (
     <div className="space-y-6 flex flex-col min-h-[calc(100vh-140px)] w-full min-w-0">

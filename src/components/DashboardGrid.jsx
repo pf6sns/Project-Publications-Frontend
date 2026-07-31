@@ -54,7 +54,7 @@ export function FacultyDashboardCharts({ publications, publicationStatuses }) {
 
   const monthlyTrendData = months.map((month, index) => {
     const count = publications.filter(p => {
-      if (!p.submissionDate) return false;
+      if (!p.submissionDate || p.status?.toLowerCase() === 'draft') return false;
       const d = new Date(p.submissionDate);
       const matchesMonth = d.getMonth() === index;
       const matchesYear = selectedYear === 'All' || d.getFullYear().toString() === selectedYear;
@@ -64,6 +64,7 @@ export function FacultyDashboardCharts({ publications, publicationStatuses }) {
   });
 
   const filteredPubsForYear = publications.filter(p => {
+    if (p.status?.toLowerCase() === 'draft') return false;
     if (selectedYear === 'All') return true;
     if (!p.submissionDate) return false;
     return new Date(p.submissionDate).getFullYear().toString() === selectedYear;
