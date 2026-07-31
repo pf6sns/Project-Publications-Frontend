@@ -15,8 +15,9 @@ import TermsAndConditions from '../pages/Auth/TermsAndConditions';
 import PrivacyPolicy from '../pages/Auth/PrivacyPolicy';
 import RefundPolicy from '../pages/Auth/RefundPolicy';
 import config from '../config';
+import { useHealth } from '../context/HealthContext';
 
-// Set to true to put the application in Maintenance Mode; false for normal operation.
+// Set to true to force Maintenance Mode; false for normal operation.
 const IS_MAINTENANCE = false;
 
 // Admin Pages
@@ -55,6 +56,7 @@ const RootRoute = ({ landingPageEnabled, loading }) => {
 };
 
 export default function AppRoutes() {
+  const { isHealthy, lastChecked } = useHealth();
   const [landingPageEnabled, setLandingPageEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
 
@@ -75,7 +77,7 @@ export default function AppRoutes() {
     fetchSettings();
   }, []);
 
-  if (IS_MAINTENANCE) {
+  if (IS_MAINTENANCE || (!isHealthy && lastChecked !== null)) {
     return (
       <Routes>
         <Route path="*" element={<Maintenance />} />

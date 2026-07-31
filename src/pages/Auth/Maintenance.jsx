@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react';
-import { Mail, Clock } from 'lucide-react';
+import { Mail, Clock, RefreshCw } from 'lucide-react';
+import { useHealth } from '../../context/HealthContext';
 
 // Import your two image variations
 import maintenanceArt from '../../assets/images/maintenanceimage.jpeg';
 import maintenanceArtOpen from '../../assets/images/maintenanceimage.jpeg';
 
 export default function Maintenance() {
+  const { recheckHealth, isChecking } = useHealth() || {};
 
   // Force light mode on this specific page by removing dark class from HTML
   useEffect(() => {
@@ -52,12 +54,10 @@ export default function Maintenance() {
         className="relative w-full min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8"
         style={{ backgroundColor: '#ffffff', color: '#1e293b' }}
       >
-
         {/* Container for the illustration */}
         <div className="relative w-full max-w-3xl flex justify-center mb-4">
           {/* The container itself bobs up and down gently to make everything "float" */}
           <div className="relative w-full max-w-xl custom-animate-float-slow flex justify-center">
-
             {/* Base image (Closed Eyes) */}
             <img
               src={maintenanceArt}
@@ -72,7 +72,6 @@ export default function Maintenance() {
               className="absolute inset-0 w-full h-full object-contain custom-animate-blink-meditation"
               aria-hidden="true"
             />
-
           </div>
         </div>
 
@@ -85,15 +84,15 @@ export default function Maintenance() {
           </h1>
 
           <p
-            className="text-lg sm:text-xl font-medium mb-10 max-w-xl mx-auto"
+            className="text-lg sm:text-xl font-medium mb-8 max-w-xl mx-auto"
             style={{ color: '#64748b' }}
           >
             We're taking a moment of zen to upgrade the SNS RPMS system. Please check back shortly!
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
             <div
-              className="flex items-center gap-3 px-6 py-4 rounded-2xl w-full sm:w-auto transition-all"
+              className="flex items-center justify-center gap-3 px-6 py-4 rounded-2xl w-full sm:w-auto transition-all"
               style={{
                 backgroundColor: '#f8fafc',
                 border: '1px solid #f1f5f9',
@@ -101,16 +100,34 @@ export default function Maintenance() {
             >
               <Clock size={20} style={{ color: '#94a3b8' }} />
               <span className="font-bold text-sm" style={{ color: '#475569' }}>
-                Estimated downtime: 2 hours
+                Estimated downtime: Temporary
               </span>
             </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              onClick={() => {
+                if (recheckHealth) recheckHealth();
+                else window.location.reload();
+              }}
+              disabled={isChecking}
+              className="w-full sm:w-auto px-6 py-4 rounded-2xl font-bold text-white transition-all transform hover:-translate-y-1 hover:shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+              style={{
+                background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                boxShadow: '0 10px 25px -5px rgba(59, 130, 246, 0.4)',
+              }}
+            >
+              <RefreshCw size={18} className={isChecking ? 'animate-spin' : ''} />
+              {isChecking ? 'Checking System Status...' : 'Check System Status'}
+            </button>
 
             <button
               onClick={() => window.location.href = 'mailto:support@sns.edu'}
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-white transition-all transform hover:-translate-y-1 hover:shadow-lg flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-6 py-4 rounded-2xl font-bold text-white transition-all transform hover:-translate-y-1 hover:shadow-lg flex items-center justify-center gap-2"
               style={{
                 background: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
-                boxShadow: '0 10px 25px -5px rgba(63, 232, 117, 0.4)',
+                boxShadow: '0 10px 25px -5px rgba(16, 185, 129, 0.4)',
               }}
             >
               <Mail size={18} />

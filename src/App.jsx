@@ -9,20 +9,23 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { RoleProvider } from './context/RoleContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { HealthProvider } from './context/HealthContext';
 import AppRoutes from './routes/AppRoutes';
 
 export default function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <RoleProvider>
-          <NotificationProvider>
-            <BrowserRouter>
-              <AppRoutes />
-            </BrowserRouter>
-          </NotificationProvider>
-        </RoleProvider>
-      </AuthProvider>
+      <HealthProvider>
+        <AuthProvider>
+          <RoleProvider>
+            <NotificationProvider>
+              <BrowserRouter>
+                <AppRoutes />
+              </BrowserRouter>
+            </NotificationProvider>
+          </RoleProvider>
+        </AuthProvider>
+      </HealthProvider>
     </ThemeProvider>
   );
 }
