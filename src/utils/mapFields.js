@@ -47,7 +47,7 @@ const resolveRole = (row) => {
 export const mapSubmission = (row) => {
     const rawInst = row.institution_name || row.institution || BRANCH_MAP[row.branchId] || BRANCH_MAP[row.institution_id] || '';
     return {
-        id: row.custom_publication_id,
+        id: row.custom_publication_id || row.publication_id,
         title: row.title,
         author: row.name || row.faculty_name || undefined,
         authorEmail: row.email,

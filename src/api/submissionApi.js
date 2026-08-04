@@ -55,6 +55,16 @@ export const markSubmitted = async (customPublicationId) => {
   return unwrap(res).data;
 };
 
+export const updateDraft = async (customPublicationId, { title, file }) => {
+  const form = new FormData();
+  form.append('title', title);
+  if (file) {
+    form.append('manuscript', file);
+  }
+  const res = await apiClient.put(`/faculty/submission/update/${customPublicationId}`, form);
+  return unwrap(res).data;
+};
+
 /** Admin uploads a review PDF, marks Completed — PUT .../review (multipart) */
 export const uploadReview = async (customPublicationId, reviewFile) => {
   const form = new FormData();

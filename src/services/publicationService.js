@@ -58,6 +58,13 @@ export const markDraftAsSubmitted = async (customPublicationId) => {
   return submissionApi.markSubmitted(customPublicationId);
 };
 
+export const updateDraft = async (customPublicationId, data) => {
+  return submissionApi.updateDraft(customPublicationId, {
+    title: data.title,
+    file: data.fileObject
+  });
+};
+
 /**
  * Only "approve" exists server-side (upload review → status becomes Completed).
  * There is no reject/rejection-reason endpoint.

@@ -11,7 +11,7 @@ import { usePayment } from '../../hooks/usePayment';
 import { useInvoice } from '../../hooks/useInvoice';
 import { usePaymentSettings } from '../../hooks/usePaymentSettings';
 import { useDisabledCategories } from '../../hooks/useDisabledCategories';
-import { getSubmissionQueue, getDrafts, markDraftAsSubmitted } from '../../services/publicationService';
+import { getSubmissionQueue, getDrafts, markDraftAsSubmitted, updateDraft } from '../../services/publicationService';
 import { PublicationCategoryGrid } from '../../components/PublicationCategoryGrid';
 import { PublicationCategoryModal } from '../../components/PublicationCategoryModal';
 import { CategoryDeleteModal } from '../../components/CategoryDeleteModal';
@@ -133,6 +133,32 @@ export const UploadPage = ({ currentUser, onSuccess, onCancelSubmission }) => {
     const timer = setTimeout(autoSave, 800);
     return () => clearTimeout(timer);
   }, [step, publicationDetails.title, publicationDetails.rawFile]);
+
+  // ── Auto-update Draft Title: when title changes on an existing draft, update on DB ──
+  useEffect(() => {
+    if (step !== 2) return;
+    const customPubId = publicationDetails.customPubId || autoSavedDraftRef.current;
+    if (!customPubId) return; // not a draft yet
+    if (!publicationDetails.title?.trim()) return;
+
+    const autoUpdateTitle = async () => {
+      setAutoSaving(true);
+      try {
+        await updateDraft(customPubId, {
+          title: publicationDetails.title,
+          fileObject: null // only update title
+        });
+        setAutoSaved(true);
+      } catch (err) {
+        console.error("Auto-update draft title failed:", err);
+      } finally {
+        setAutoSaving(false);
+      }
+    };
+
+    const timer = setTimeout(autoUpdateTitle, 800);
+    return () => clearTimeout(timer);
+  }, [step, publicationDetails.title]);
 
   // Automatically select category and jump to step 2 if categoryId is in URL
   useEffect(() => {
@@ -265,6 +291,12 @@ export const UploadPage = ({ currentUser, onSuccess, onCancelSubmission }) => {
         }
         customPubId = pubResult.publication.id;
         autoSavedDraftRef.current = customPubId;
+      } else {
+        // Update the draft with the latest title and file on the server
+        await updateDraft(customPubId, {
+          title: publicationDetails.title,
+          fileObject: publicationDetails.rawFile
+        });
       }
 
       // If payment is disabled by admin OR category is free → promote Draft to Submitted → success
