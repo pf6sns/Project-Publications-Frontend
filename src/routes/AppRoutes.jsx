@@ -34,6 +34,7 @@ import { ProfilePage } from '../pages/Shared/Profile';
 
 // Developer Pages
 import { AssignRolePage } from '../pages/Developer/AssignRole';
+import { DeveloperFacultySubmissionPage } from '../pages/Developer/FacultySubmission';
 
 const RootRoute = ({ landingPageEnabled, loading }) => {
   const { currentUser } = useAuth();
@@ -134,6 +135,7 @@ export default function AppRoutes() {
         {/* Developer Routes */}
         <Route element={<RoleRoute allowedRoles={['Developer']} />}>
           <Route path="/developer/assign-role" element={<PageWrapper Component={AssignRolePage} />} />
+          <Route path="/developer/faculty-submission" element={<PageWrapper Component={DeveloperFacultySubmissionPage} />} />
           <Route path="/developer/profile" element={<PageWrapper Component={ProfilePage} />} />
         </Route>
       </Route>

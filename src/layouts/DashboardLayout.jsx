@@ -117,6 +117,7 @@ export default function DashboardLayout() {
     if (path.includes('/publications')) return 'My Publications';
     if (path.includes('/faculty-profiles') || path.includes('/admin/faculty')) return 'Faculty Profiles';
     if (path.includes('/developer/assign-role')) return 'Assign Role';
+    if (path.includes('/developer/faculty-submission')) return 'Submit for Faculty';
     if (path.includes('/profile')) return 'Profile';
     return 'RPMS System';
   };
@@ -172,6 +173,7 @@ export default function DashboardLayout() {
             ) : currentUser.role === 'Developer' ? (
               <>
                 {renderSidebarButton('/developer/assign-role', 'Assign Role', ShieldCheck)}
+                {renderSidebarButton('/developer/faculty-submission', 'Submit for Faculty', Upload)}
               </>
             ) : (
               <>
