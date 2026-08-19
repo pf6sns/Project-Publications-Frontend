@@ -8,8 +8,24 @@
  * When the backend is ready, set VITE_ENABLE_MOCK=false in .env.production.
  */
 
+const getApiBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
+  if (typeof window !== 'undefined' && window.location?.hostname) {
+    const currentHost = window.location.hostname;
+    if (currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
+      if (envUrl.includes('localhost')) {
+        return envUrl.replace('localhost', currentHost);
+      }
+      if (envUrl.includes('127.0.0.1')) {
+        return envUrl.replace('127.0.0.1', currentHost);
+      }
+    }
+  }
+  return envUrl;
+};
+
 const config = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL,
+  apiBaseUrl: getApiBaseUrl(),
 
   /** Human-readable application name */
   appName: import.meta.env.VITE_APP_NAME || 'SNS RPMS',

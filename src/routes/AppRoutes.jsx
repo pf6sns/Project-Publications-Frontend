@@ -65,9 +65,14 @@ export default function AppRoutes() {
     const fetchSettings = async () => {
       try {
         const response = await fetch(`${config.apiBaseUrl}/auth/system-settings`);
-        const resData = await response.json();
-        if (resData.success) {
-          setLandingPageEnabled(resData.data.landing_page_enabled);
+        if (response.ok) {
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const resData = await response.json();
+            if (resData?.success) {
+              setLandingPageEnabled(resData.data.landing_page_enabled);
+            }
+          }
         }
       } catch (err) {
         console.error('Failed to load system settings:', err);
@@ -78,7 +83,7 @@ export default function AppRoutes() {
     fetchSettings();
   }, []);
 
-  if (IS_MAINTENANCE || (!isHealthy && lastChecked !== null)) {
+  if (IS_MAINTENANCE) {
     return (
       <Routes>
         <Route path="*" element={<Maintenance />} />
