@@ -49,7 +49,7 @@ export function UserProfile({ user, globalFields = [], isEditable = false, onSav
   const name = user.name;
   const email = user.email;
   const dept = user.department;
-  const phone = user.phone;
+  const phone = user.phone || user.phone_number || user.phoneNumber || user.mobile || user.mobileNumber || user.contact || user.contactNo || '—';
   const profilePic = user.profilePic || '';
   const institution = user.institution;
 

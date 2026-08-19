@@ -35,11 +35,10 @@ const FULL_INSTITUTION_MAP = {
  * - Otherwise capitalize the Okrion role (e.g. 'faculty' → 'Faculty')
  */
 const resolveRole = (row) => {
-    const raw = row.role || '';
-    if (raw.toLowerCase() === 'developer') return 'Developer';
-    if (row.admin === true) return 'Admin';
-    if (!raw) return 'Faculty';
-    return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+    const raw = String(row.role || '').toLowerCase().trim();
+    if (raw === 'developer') return 'Developer';
+    if (row.admin === true || raw === 'admin') return 'Admin';
+    return 'Faculty';
 };
 
 /** Maps a submissions-table row (any of the several shapes the backend returns) into
@@ -90,6 +89,7 @@ export const mapFacultyListItem = (row) => {
 
 export const mapUser = (row) => {
     const rawInst = row.institution_name || row.institution || BRANCH_MAP[row.branchId] || BRANCH_MAP[row.institution_id] || '';
+    const phoneVal = row.phone || row.phone_number || row.phoneNumber || row.mobile || row.mobileNumber || row.contact || row.contactNo || row.phoneNo || '';
     return {
         id: row.user_id,
         user_id: row.user_id,
@@ -97,7 +97,10 @@ export const mapUser = (row) => {
         email: row.email || '',
         role: resolveRole(row),
         department: row.department || '',
-        phone: row.phone_number || row.phone || '',
+        phone: phoneVal,
+        phone_number: phoneVal,
+        phoneNumber: phoneVal,
+        mobile: phoneVal,
         institution: FULL_INSTITUTION_MAP[rawInst] || FULL_INSTITUTION_MAP[rawInst.toUpperCase()] || rawInst,
         institutionId: row.institution_id || row.branchId || '',
         admin: row.admin || false,

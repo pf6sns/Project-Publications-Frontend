@@ -55,18 +55,27 @@ export const restoreSession = async () => {
     const res = await apiClient.get(path);
     const body = unwrap(res);
 
-    // Merge: profile endpoint data takes priority, but fall back to cached SSO data
-    // for any fields the profile endpoint doesn't return
+    // Safety check: Ensure profile endpoint email matches cached login email to prevent cross-contamination
+    const isMatchingEmail = !body.data?.email || !cached?.email ||
+      body.data.email.toLowerCase().trim() === cached.email.toLowerCase().trim();
+
+    const derivedPhone = (isMatchingEmail && (body.data?.phone || body.data?.phone_number || body.data?.phoneNumber || body.data?.mobile || body.data?.mobileNumber || body.data?.contact))
+      ? (body.data.phone || body.data.phone_number || body.data.phoneNumber || body.data.mobile || body.data.mobileNumber || body.data.contact)
+      : (cached?.phone || cached?.phone_number || cached?.phoneNumber || cached?.mobile || cached?.mobileNumber || cached?.contact || '');
+
     const mergedData = {
       ...cached,         // SSO cached data as baseline
-      ...body.data,      // Profile endpoint data overwrites
-      // Ensure critical fields are never lost
-      name: body.data.name || cached.name || '',
-      email: body.data.email || cached.email || '',
-      role: body.data.role || cached.role || 'faculty',
-      department: body.data.department || cached.department || '',
-      phone_number: body.data.phone_number || cached.phone || cached.phone_number || '',
-      institution_name: body.data.institution_name || cached.institution_name || '',
+      ...(isMatchingEmail ? body.data : {}), // Profile endpoint data overwrites only if email matches
+      // Ensure critical fields are never lost or corrupted by mismatched profile responses
+      name: (isMatchingEmail && body.data.name) ? body.data.name : (cached.name || body.data.name || ''),
+      email: cached.email || body.data.email || '',
+      role: (isMatchingEmail && body.data.role) ? body.data.role : (cached.role || 'faculty'),
+      department: (isMatchingEmail && body.data.department) ? body.data.department : (cached.department || ''),
+      phone: derivedPhone,
+      phone_number: derivedPhone,
+      phoneNumber: derivedPhone,
+      mobile: derivedPhone,
+      institution_name: (isMatchingEmail && body.data.institution_name) ? body.data.institution_name : (cached.institution_name || ''),
       admin: body.data.admin ?? cached.admin ?? false,
       temp_admin: body.data.temp_admin ?? cached.temp_admin ?? false,
     };

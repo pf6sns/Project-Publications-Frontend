@@ -14,9 +14,11 @@ export default function RoleRoute({ allowedRoles }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!allowedRoles.includes(currentUser.role)) {
-    // Redirect to default dashboard based on their role
-    return <Navigate to={currentUser.role === 'Admin' ? '/admin/dashboard' : '/faculty/dashboard'} replace />;
+  const role = currentUser.admin === true ? 'Admin' : (currentUser.role || 'Faculty');
+
+  if (!allowedRoles.includes(role) && !allowedRoles.includes(currentUser.role)) {
+    // Redirect to base page based on their role (use /faculty/upload for faculty to avoid permission loop)
+    return <Navigate to={role === 'Admin' ? '/admin/dashboard' : '/faculty/upload'} replace />;
   }
 
   return <Outlet />;
