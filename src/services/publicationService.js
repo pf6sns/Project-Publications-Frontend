@@ -27,9 +27,20 @@ export const getSubmissionQueue = (params) => submissionApi.fetchSubmissionQueue
 export const getMyPublications = (params) => submissionApi.fetchMyPublications(params);
 
 /**
- * Returns a single publication detail.
+ * Returns a single publication detail (Faculty view).
  */
 export const getPublicationDetail = (id) => submissionApi.fetchMyPublicationDetail(id);
+
+/**
+ * Returns a single publication detail (Admin evaluation view).
+ */
+export const getAdminSubmissionDetail = (id) => submissionApi.fetchSubmissionDetail(id);
+
+const notifyPublicationUpdated = () => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('publication-updated'));
+  }
+};
 
 /**
  * Submits a new publication.
@@ -43,11 +54,14 @@ export const submitPublication = async (data) => {
     categoryId: data.categoryId,
     file: data.fileObject,
   });
+  notifyPublicationUpdated();
   return { success: true, publication: created };
 };
 
 export const deletePublication = async (customPublicationId) => {
-  return submissionApi.deleteSubmission(customPublicationId);
+  const res = await submissionApi.deleteSubmission(customPublicationId);
+  notifyPublicationUpdated();
+  return res;
 };
 
 export const getDrafts = async () => {
@@ -55,14 +69,18 @@ export const getDrafts = async () => {
 };
 
 export const markDraftAsSubmitted = async (customPublicationId) => {
-  return submissionApi.markSubmitted(customPublicationId);
+  const res = await submissionApi.markSubmitted(customPublicationId);
+  notifyPublicationUpdated();
+  return res;
 };
 
 export const updateDraft = async (customPublicationId, data) => {
-  return submissionApi.updateDraft(customPublicationId, {
+  const res = await submissionApi.updateDraft(customPublicationId, {
     title: data.title,
     file: data.fileObject
   });
+  notifyPublicationUpdated();
+  return res;
 };
 
 /**
@@ -73,7 +91,15 @@ export const updateDraft = async (customPublicationId, data) => {
  * @param {File} reviewFileObject
  */
 export const completeReview = async (customPublicationId, reviewFileObject) => {
-  return submissionApi.uploadReview(customPublicationId, reviewFileObject);
+  const res = await submissionApi.uploadReview(customPublicationId, reviewFileObject);
+  notifyPublicationUpdated();
+  return res;
+};
+
+export const reattemptSubmission = async (customPublicationId, fileObject) => {
+  const res = await submissionApi.reattemptSubmission(customPublicationId, fileObject);
+  notifyPublicationUpdated();
+  return res;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

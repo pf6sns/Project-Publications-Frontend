@@ -52,6 +52,17 @@ export const AdminQueuePage = ({
 
   useEffect(() => {
     fetchQueue();
+  }, [currentPage, aSearchText, aStatusFilter, JSON.stringify(aInstitutionFilter), aStartDate, aEndDate, location.key]);
+
+  // Listen for global publication mutation events and window focus for auto-refresh
+  useEffect(() => {
+    const handleUpdate = () => fetchQueue();
+    window.addEventListener('publication-updated', handleUpdate);
+    window.addEventListener('focus', handleUpdate);
+    return () => {
+      window.removeEventListener('publication-updated', handleUpdate);
+      window.removeEventListener('focus', handleUpdate);
+    };
   }, [currentPage, aSearchText, aStatusFilter, JSON.stringify(aInstitutionFilter), aStartDate, aEndDate]);
 
   // Reset page when filters change
@@ -104,7 +115,7 @@ export const AdminQueuePage = ({
           {/* Status */}
           <div className="w-full sm:w-40 shrink-0">
             <SearchableDropdown
-              options={['All statuses', 'Submitted', 'Completed']}
+              options={['All statuses', 'Submitted', 'Re-attempted', 'Completed']}
               value={aStatusFilter}
               onChange={setAStatusFilter}
               placeholder="Status"
@@ -196,17 +207,18 @@ export const AdminQueuePage = ({
                         {pub.institution || 'N/A'}
                       </td>
 
-                      <td className="px-6 py-4 font-medium text-left">{new Date(pub.submissionDate).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 font-medium text-left">{pub.submissionDate ? new Date(pub.submissionDate).toLocaleDateString() : 'N/A'}</td>
                       <td className="px-6 py-4 text-left">
-                        <span className={`px-2 py-0.5 text-[9px] uppercase font-mono font-black rounded-full ${pub.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' :
-                          pub.status === 'Submitted' ? 'bg-amber-100 text-amber-800 animate-pulse' :
-                            'bg-slate-100 text-slate-600'
+                        <span className={`px-2.5 py-1 text-[9px] uppercase font-mono font-black rounded-full whitespace-nowrap inline-block ${pub.status === 'Completed' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
+                          pub.status === 'Re-attempted' ? 'bg-indigo-100 text-indigo-800 border border-indigo-200' :
+                            pub.status === 'Submitted' ? 'bg-amber-100 text-amber-800 border border-amber-200 animate-pulse' :
+                              'bg-slate-100 text-slate-600 border border-slate-200'
                           }`}>
                           {pub.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 font-medium text-left">
-                        {pub.status === 'Submitted' ? '-' : new Date(pub.lastUpdated).toLocaleDateString()}
+                        {(pub.status === 'Submitted' || pub.status === 'Re-attempted' || !pub.lastUpdated || isNaN(new Date(pub.lastUpdated).getTime())) ? '-' : new Date(pub.lastUpdated).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 text-center">
                         <div className="flex items-center justify-center gap-2">
