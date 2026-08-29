@@ -164,7 +164,7 @@ export function TempAdminDashboard({
                   <div className="border border-dashed border-slate-300 rounded-xl p-4 bg-slate-50 hover:bg-slate-100/50 transition-colors flex flex-col items-center justify-center relative cursor-pointer group">
                     <input
                       type="file"
-                      accept=".pdf,.doc,.docx"
+                      accept=".pdf"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) {
@@ -175,7 +175,7 @@ export function TempAdminDashboard({
                     />
                     <UploadCloud className="h-6 w-6 text-slate-400 group-hover:text-slate-500 transition-colors mb-1.5" />
                     <span className="text-xs font-semibold text-slate-700">Click to choose or drag file</span>
-                    <span className="text-[10px] text-slate-400 mt-0.5">Supports PDF or Word up to 100 MB</span>
+                    <span className="text-[10px] text-slate-400 mt-0.5">Supports PDF up to 100 MB</span>
                   </div>
                 ) : (
                   <div className="border border-slate-200 bg-emerald-50/20 rounded-xl p-3 flex items-center justify-between shadow-xs animate-fade-in">
