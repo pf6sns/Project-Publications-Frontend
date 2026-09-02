@@ -4,9 +4,10 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Eye, X, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Eye, X, Download, ChevronLeft, ChevronRight, Info } from 'lucide-react';
 import { SearchableDropdown } from '../../components/SearchableDropdown';
 import { DateRangePicker } from '../../components/DateRangePicker';
+import { PublicationIdInfoModal } from '../../components/PublicationIdInfoModal';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getSubmissionQueue } from '../../services/publicationService';
 
@@ -23,6 +24,7 @@ export const AdminQueuePage = ({
   const [aStartDate, setAStartDate] = useState('');
   const [aEndDate, setAEndDate] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [showInfoModal, setShowInfoModal] = useState(false);
   const itemsPerPage = 10;
 
   const [publications, setPublications] = useState([]);
@@ -88,7 +90,11 @@ export const AdminQueuePage = ({
   const paginatedPubs = publications;
 
   return (
-    <div className="space-y-6 w-full animate-fade-in">
+    <div className="space-y-6 w-full">
+      <PublicationIdInfoModal
+        isOpen={showInfoModal}
+        onClose={() => setShowInfoModal(false)}
+      />
 
       {/* Admin advanced filters block */}
       <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-sm text-left transition-all duration-300 hover:scale-[1.01] hover:shadow-md hover:border-slate-300 relative z-20 overflow-visible">
@@ -171,7 +177,18 @@ export const AdminQueuePage = ({
               <thead>
                 <tr className="text-xs text-slate-500 font-extrabold uppercase tracking-wider bg-slate-50 border-b border-platinum-silver/45">
                   <th className="px-6 py-4 text-left">S.No</th>
-                  <th className="px-6 py-4 text-left">Publication ID</th>
+                  <th className="px-6 py-4 text-left">
+                    <div className="flex items-center space-x-1.5">
+                      <span>Publication ID</span>
+                      <button
+                        onClick={() => setShowInfoModal(true)}
+                        title="What is Publication ID?"
+                        className="p-1 rounded-full text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
+                      >
+                        <Info className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </th>
                   <th className="px-6 py-4 text-left">Title</th>
                   <th className="px-6 py-4 text-left">Faculty Name</th>
                   <th className="px-6 py-4 text-left">Category</th>

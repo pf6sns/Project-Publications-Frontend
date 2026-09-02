@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Eye, ArrowLeft, Download, Search, X, ChevronLeft, ChevronRight, RotateCcw, UploadCloud, AlertTriangle, FileText, CheckCircle2, Loader2 } from 'lucide-react';
+import { Eye, ArrowLeft, Download, Search, X, ChevronLeft, ChevronRight, RotateCcw, UploadCloud, AlertTriangle, FileText, CheckCircle2, Loader2, Info } from 'lucide-react';
 import { DateRangePicker } from '../../components/DateRangePicker';
 import { SearchableDropdown } from '../../components/SearchableDropdown';
+import { PublicationIdInfoModal } from '../../components/PublicationIdInfoModal';
 import { getMyPublications, getPublicationDetail, reattemptSubmission } from '../../services/publicationService';
 import { downloadFromUrl } from '../../services/uploadService';
 import { getAbsolutePdfUrl } from '../../api/apiClient';
@@ -25,6 +26,7 @@ export const PublicationsPage = ({
   const [publications, setPublications] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [showInfoModal, setShowInfoModal] = useState(false);
 
   // Re-attempt Modal States
   const [showReattemptConfirm, setShowReattemptConfirm] = useState(false);
@@ -158,6 +160,11 @@ export const PublicationsPage = ({
 
   return (
     <div className="space-y-6 w-full">
+      <PublicationIdInfoModal
+        isOpen={showInfoModal}
+        onClose={() => setShowInfoModal(false)}
+      />
+
       {/* ── Re-attempt Confirmation Modal ────────────────────────────────────────── */}
       {showReattemptConfirm && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
@@ -376,9 +383,18 @@ export const PublicationsPage = ({
                     <tr className="bg-slate-50 text-slate-500 uppercase tracking-widest font-extrabold text-xs border-b border-slate-200">
                       <th className="p-4 text-center">S.No</th>
                       <th className="p-4 text-center">
-                        <div className="flex flex-col items-center">
-                          <span>Publication</span>
-                          <span>ID</span>
+                        <div className="flex items-center justify-center space-x-1.5">
+                          <div className="flex flex-col items-center">
+                            <span>Publication</span>
+                            <span>ID</span>
+                          </div>
+                          <button
+                            onClick={() => setShowInfoModal(true)}
+                            title="What is Publication ID?"
+                            className="p-1 rounded-full text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
+                          >
+                            <Info className="h-3.5 w-3.5" />
+                          </button>
                         </div>
                       </th>
                       <th className="p-4 text-left">Title</th>
