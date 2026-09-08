@@ -91,6 +91,16 @@ export default function AppRoutes() {
     );
   }
 
+  // Auto-maintenance: if the backend health check has completed at least once
+  // and the server is reported unhealthy, redirect all routes to the maintenance page.
+  if (!isHealthy && lastChecked !== null) {
+    return (
+      <Routes>
+        <Route path="*" element={<Maintenance />} />
+      </Routes>
+    );
+  }
+
   return (
     <Routes>
       <Route path="/" element={<RootRoute landingPageEnabled={landingPageEnabled} loading={loading} />} />
