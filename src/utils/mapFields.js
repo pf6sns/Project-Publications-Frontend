@@ -37,14 +37,55 @@ const FULL_INSTITUTION_MAP = {
 const resolveRole = (row) => {
     const raw = String(row.role || '').toLowerCase().trim();
     if (raw === 'developer') return 'Developer';
+    if (raw === 'student') return 'Student';
     if (row.admin === true || raw === 'admin') return 'Admin';
     return 'Faculty';
+};
+
+export const parseUrlList = (val) => {
+    if (!val) return [];
+    if (Array.isArray(val)) return val.filter(Boolean);
+    if (typeof val === 'string') {
+        const trimmed = val.trim();
+        if (trimmed.startsWith('[')) {
+            try {
+                const parsed = JSON.parse(trimmed);
+                if (Array.isArray(parsed)) return parsed.filter(Boolean);
+            } catch (e) {}
+        }
+        if (trimmed.includes(',')) {
+            return trimmed.split(',').map(s => s.trim()).filter(Boolean);
+        }
+        return [trimmed];
+    }
+    return [];
 };
 
 /** Maps a submissions-table row (any of the several shapes the backend returns) into
  *  the shape used across pages/components. */
 export const mapSubmission = (row) => {
     const rawInst = row.institution_name || row.institution || BRANCH_MAP[row.branchId] || BRANCH_MAP[row.institution_id] || '';
+    
+    let explicitR = [
+        row.review_pdf_url_1,
+        row.review_pdf_url_2,
+        row.review_pdf_url_3,
+        row.review_pdf_url_4,
+        row.review_pdf_url_5
+    ].filter(Boolean);
+    let legacyR = parseUrlList(row.review_pdf_url);
+    let rUrls = explicitR.length > 0 ? explicitR : legacyR;
+
+    let explicitReR = [
+        row.reattempt_review_pdf_url_1,
+        row.reattempt_review_pdf_url_2,
+        row.reattempt_review_pdf_url_3,
+        row.reattempt_review_pdf_url_4,
+        row.reattempt_review_pdf_url_5
+    ].filter(Boolean);
+    let legacyReR = parseUrlList(row.reattempt_review_pdf_url);
+    let reRUrls = explicitReR.length > 0 ? explicitReR : legacyReR;
+
     return {
         id: row.custom_publication_id || row.publication_id,
         title: row.title,
@@ -58,7 +99,15 @@ export const mapSubmission = (row) => {
         submissionDate: row.submission_date || row.uploaded_date,
         lastUpdated: row.updated_at || row.reviewed_date,
         manuscriptUrl: row.manuscript_pdf_url,
-        reviewUrl: row.review_pdf_url,
+        reviewUrl: rUrls[0] || null,
+        reviewUrls: rUrls,
+        reattemptCount: Number(row.reattempt_count || row.reattemptCount || 0),
+        isReattempted: !!(row.is_reattempted || row.isReattempted || (row.reattempt_count > 0) || row.reattempt_manuscript_pdf_url),
+        reattemptManuscriptUrl: row.reattempt_manuscript_pdf_url || row.reattemptManuscriptUrl || null,
+        reattemptReviewUrl: reRUrls[0] || null,
+        reattemptReviewUrls: reRUrls,
+        reattemptDate: row.reattempt_date || row.reattemptDate || null,
+        reattemptReviewedDate: row.reattempt_reviewed_date || row.reattemptReviewedDate || null,
         sno: row.sno,
     };
 };

@@ -10,6 +10,11 @@ const SESSION_KEY = 'rpms_user';
  * then fetches faculty details from the Okrion API and returns a merged user.
  */
 export const login = async (ssoPayload) => {
+  // Clear any stale session before attempting a fresh login, so a previous
+  // user's cached token/profile can never bleed into this attempt (e.g. on a
+  // shared browser where the prior user didn't explicitly log out).
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(SESSION_KEY);
   try {
     const res = await apiClient.post('/auth/sso-login', ssoPayload);
     const body = unwrap(res);

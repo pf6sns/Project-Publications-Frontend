@@ -31,24 +31,17 @@ export const AdminEvaluationPage = ({
 
   useEffect(() => {
     if (selectedPubId) {
-      // Check router state first (passed from the queue — has correct author)
-      if (statePublication && statePublication.id === selectedPubId) {
-        setDirectFetchedPub(statePublication);
-        return;
-      }
-      // Then check the publications list prop
-      const found = publications.find(p => p.id === selectedPubId);
-      if (!found) {
-        publicationService.getPublicationDetail(selectedPubId)
-          .then(pub => setDirectFetchedPub(pub))
-          .catch(err => console.error("Failed to load publication details:", err));
-      } else {
-        setDirectFetchedPub(null);
-      }
+      publicationService.getAdminSubmissionDetail(selectedPubId)
+        .then(pub => setDirectFetchedPub(pub))
+        .catch(err => {
+          console.error("Failed to load publication details:", err);
+          const found = publications.find(p => p.id === selectedPubId) || statePublication;
+          if (found) setDirectFetchedPub(found);
+        });
     } else {
       setDirectFetchedPub(null);
     }
-  }, [selectedPubId, publications]);
+  }, [selectedPubId]);
 
   const combinedPublications = directFetchedPub 
     ? [...publications, directFetchedPub]

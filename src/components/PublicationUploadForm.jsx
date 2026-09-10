@@ -44,8 +44,8 @@ export function PublicationUploadForm({
   const processFile = (selectedFile) => {
     setErrorMsg('');
     const extension = selectedFile.name.split('.').pop()?.toLowerCase();
-    if (extension !== 'pdf' && extension !== 'docx') {
-      setErrorMsg('Unsupported file format. Only PDF or DOCX allowed.');
+    if (extension !== 'pdf') {
+      setErrorMsg('Unsupported file format. Only PDF files are allowed.');
       return;
     }
     if (selectedFile.size > 10 * 1024 * 1024) {
@@ -88,7 +88,7 @@ export function PublicationUploadForm({
     }
 
     if (!publicationDetails.file) {
-      setErrorMsg('Please select or drop a valid PDF or DOCX manuscript file.');
+      setErrorMsg('Please select or drop a valid PDF manuscript file.');
       return;
     }
 
@@ -121,42 +121,41 @@ export function PublicationUploadForm({
           </div>
           {isPaymentEnabled && (
             <div className="bg-ice-gray p-4 rounded-xl border border-platinum-silver">
-              <span className="block text-[10px] font-extrabold uppercase text-slate-gray mb-1">Publication Fee</span>
-              <span className="text-sm font-black text-charcoal font-mono">₹{selectedCategory?.amount}</span>
+              <span className="block text-[10px] font-extrabold uppercase text-slate-gray mb-1">Category Fee</span>
+              <span className="text-sm font-bold text-charcoal">₹{selectedCategory?.amount}</span>
             </div>
           )}
         </div>
 
-        <div>
-          <label className="block text-xs font-bold uppercase text-charcoal mb-1.5">
-            Publication Title <span className="text-red-500">*</span>
-          </label>
-          <div className="relative">
+        {/* Form Fields */}
+        <div className="space-y-4 text-left">
+          <div>
+            <label className="block text-xs font-bold uppercase text-charcoal mb-1.5">
+              Publication Title <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
+              placeholder="Enter full publication title..."
               value={publicationDetails.title}
               onChange={(e) => onUpdateDetails({ title: e.target.value })}
-              placeholder="Enter complete research publication title..."
-              className="w-full text-sm border border-platinum-silver rounded-xl p-3 pr-16 focus:ring-2 focus:ring-steel-gray focus:outline-none bg-pure-white text-charcoal"
-              maxLength={titleCharLimit}
+              className="w-full px-3.5 py-2.5 bg-arctic-white border border-platinum-silver rounded-xl text-xs font-medium text-charcoal placeholder-slate-gray outline-none focus:border-charcoal transition-colors"
             />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-medium text-slate-400 pointer-events-none">
-              <span className={publicationDetails.title.length > titleCharLimit ? 'text-red-600' : ''}>
-                {publicationDetails.title.length} / {titleCharLimit}
-              </span>
-            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase text-charcoal mb-1.5">
+              Department
+            </label>
+            <input
+              type="text"
+              readOnly
+              value={currentDepartment}
+              className="w-full px-3.5 py-2.5 bg-ice-gray border border-platinum-silver rounded-xl text-xs font-bold text-slate-gray cursor-not-allowed outline-none"
+            />
           </div>
         </div>
 
-        <div>
-          <label className="block text-xs font-bold uppercase text-charcoal mb-1.5">
-            Department
-          </label>
-          <div className="w-full text-sm border border-platinum-silver rounded-xl p-3 bg-ice-gray text-slate-gray cursor-not-allowed">
-            {currentDepartment}
-          </div>
-        </div>
-
+        {/* File Upload Box */}
         <div>
           <label className="block text-xs font-bold uppercase text-charcoal mb-1.5">
             Manuscript File <span className="text-red-500">*</span>
@@ -174,11 +173,11 @@ export function PublicationUploadForm({
             >
               <Upload className="h-10 w-10 text-slate-gray mx-auto mb-3 pointer-events-none transition-colors group-hover:text-charcoal" />
               <p className="text-sm font-bold text-charcoal mb-1.5 pointer-events-none">Click or Drag &amp; Drop to upload</p>
-              <p className="text-xs font-medium text-slate-gray pointer-events-none">Only PDF or DOCX allowed (Max 10 MB)</p>
+              <p className="text-xs font-medium text-slate-gray pointer-events-none">Only PDF allowed (Max 10 MB)</p>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".pdf,.docx"
+                accept=".pdf"
                 onChange={handleFileChange}
                 className="hidden"
               />

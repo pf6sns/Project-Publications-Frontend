@@ -134,31 +134,31 @@ export const UploadPage = ({ currentUser, onSuccess, onCancelSubmission }) => {
     return () => clearTimeout(timer);
   }, [step, publicationDetails.title, publicationDetails.rawFile]);
 
-  // ── Auto-update Draft Title: when title changes on an existing draft, update on DB ──
+  // ── Auto-update Draft: when title or manuscript file changes on an existing draft, update on DB ──
   useEffect(() => {
     if (step !== 2) return;
     const customPubId = publicationDetails.customPubId || autoSavedDraftRef.current;
     if (!customPubId) return; // not a draft yet
     if (!publicationDetails.title?.trim()) return;
 
-    const autoUpdateTitle = async () => {
+    const autoUpdateDraft = async () => {
       setAutoSaving(true);
       try {
         await updateDraft(customPubId, {
           title: publicationDetails.title,
-          fileObject: null // only update title
+          fileObject: publicationDetails.rawFile || null
         });
         setAutoSaved(true);
       } catch (err) {
-        console.error("Auto-update draft title failed:", err);
+        console.error("Auto-update draft failed:", err);
       } finally {
         setAutoSaving(false);
       }
     };
 
-    const timer = setTimeout(autoUpdateTitle, 800);
+    const timer = setTimeout(autoUpdateDraft, 800);
     return () => clearTimeout(timer);
-  }, [step, publicationDetails.title]);
+  }, [step, publicationDetails.title, publicationDetails.rawFile]);
 
   // Automatically select category and jump to step 2 if categoryId is in URL
   useEffect(() => {

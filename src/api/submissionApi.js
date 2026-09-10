@@ -65,10 +65,13 @@ export const updateDraft = async (customPublicationId, { title, file }) => {
   return unwrap(res).data;
 };
 
-/** Admin uploads a review PDF, marks Completed — PUT .../review (multipart) */
-export const uploadReview = async (customPublicationId, reviewFile) => {
+/** Admin uploads review PDF(s) (up to 5 files), marks Completed — PUT .../review (multipart) */
+export const uploadReview = async (customPublicationId, reviewFiles) => {
   const form = new FormData();
-  form.append('reviewPdf', reviewFile); // field name MUST be "reviewPdf"
+  const filesArray = Array.isArray(reviewFiles) ? reviewFiles : [reviewFiles];
+  filesArray.forEach(file => {
+    form.append('reviewPdf', file);
+  });
   const res = await apiClient.put(`/admin/submission/view/${customPublicationId}/review`, form);
   return mapSubmission(unwrap(res).data);
 };
@@ -87,5 +90,12 @@ export const fetchMyPublications = async (params = {}) => {
 
 export const fetchMyPublicationDetail = async (customPublicationId) => {
   const res = await apiClient.get(`/my-publications/${customPublicationId}`);
+  return mapSubmission(unwrap(res).data);
+};
+
+export const reattemptSubmission = async (customPublicationId, file) => {
+  const form = new FormData();
+  form.append('manuscript', file);
+  const res = await apiClient.post(`/faculty/submission/reattempt/${customPublicationId}`, form);
   return mapSubmission(unwrap(res).data);
 };

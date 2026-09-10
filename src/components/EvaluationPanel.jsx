@@ -16,24 +16,21 @@ export function AdminReviews({
   hideSensitiveInfo = false,
 }) {
   const [errorMsg, setErrorMsg] = useState('');
-  const [reviewFile, setReviewFile] = useState(null);
-  const [activeView, setActiveView] = useState({ type: null, url: null }); // type: 'manuscript' | 'review' | null
-  const [viewLoading, setViewLoading] = useState(null); // 'manuscript' | 'review' | null
+  const [reviewFiles, setReviewFiles] = useState([]);
+  const [activeView, setActiveView] = useState({ type: null, url: null }); // type: 'manuscript' | 'review_0' | null
+  const [viewLoading, setViewLoading] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   // Revoke blob URL when component unmounts to free memory
   useEffect(() => () => { if (activeView.url) URL.revokeObjectURL(activeView.url); }, [activeView.url]);
 
-  // handleView reuses the exact same fetch+auth logic as downloadFromUrl,
-  // but instead of triggering a download it creates a blob: URL for the iframe.
   const handleView = async (url, type) => {
     if (activeView.type === type) {
-      // Already showing this type — toggle off and free memory
       if (activeView.url) URL.revokeObjectURL(activeView.url);
       setActiveView({ type: null, url: null });
       return;
     }
 
-    // If switching to a different view, revoke the old one to free memory
     if (activeView.url) URL.revokeObjectURL(activeView.url);
 
     setViewLoading(type);
@@ -56,9 +53,6 @@ export function AdminReviews({
       if (!response.ok) throw new Error(`Status ${response.status}`);
       const raw = await response.blob();
 
-      // Unconditionally force application/pdf. If the original content-type was
-      // a Word doc or binary, preserving it causes the iframe to trigger a download.
-      // Forcing it to pdf ensures the browser renders it inline in the viewer.
       const fileBlob = new Blob([raw], { type: 'application/pdf' });
       setActiveView({ type, url: URL.createObjectURL(fileBlob) });
     } catch (err) {
@@ -68,24 +62,39 @@ export function AdminReviews({
     }
   };
 
-  // Active Pending reviews
-  const pendingPubs = publications.filter(p => p.status === 'Submitted');
+  // Active Pending reviews (Submitted or Re-attempted)
+  const pendingPubs = publications.filter(p => p.status === 'Submitted' || p.status === 'Re-attempted');
   const activePub = publications.find(p => p.id === selectedPubId);
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
     if (!activePub) return;
     setErrorMsg('');
-    if (!reviewFile) {
-      setErrorMsg('Please upload a reviewed/annotated document to proceed.');
+    if (reviewFiles.length === 0) {
+      setErrorMsg('Please upload at least one reviewed document to proceed.');
       return;
     }
-    onApprove(activePub.id, reviewFile);
-    setReviewFile(null);
-    onSelectPub(null);
+    if (reviewFiles.length > 5) {
+      setErrorMsg('You can upload a maximum of 5 review PDF files.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await onApprove(activePub.id, reviewFiles);
+      setReviewFiles([]);
+      onSelectPub(null);
+    } catch (err) {
+      console.error('[EvaluationPanel] handleApprove failed:', err);
+      setErrorMsg(err.message || 'Failed to submit review document.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
 
   if (activePub) {
+    const rList = (activePub.reviewUrls && activePub.reviewUrls.length > 0) ? activePub.reviewUrls : (activePub.reviewUrl ? [activePub.reviewUrl] : []);
+    const reRList = (activePub.reattemptReviewUrls && activePub.reattemptReviewUrls.length > 0) ? activePub.reattemptReviewUrls : (activePub.reattemptReviewUrl ? [activePub.reattemptReviewUrl] : []);
+
     return (
       <div className="space-y-6">
         {/* Detail Return bar */}
@@ -93,7 +102,7 @@ export function AdminReviews({
           <button
             onClick={() => {
               setErrorMsg('');
-              setReviewFile(null);
+              setReviewFiles([]);
               onSelectPub(null);
             }}
             className="px-4 py-2 text-xs font-bold text-charcoal bg-frost-gray hover:bg-mist-silver border border-platinum-silver rounded-lg flex items-center space-x-1.5 cursor-pointer transition-colors"
@@ -129,7 +138,8 @@ export function AdminReviews({
 
             <div className="flex-1 text-right w-full md:w-auto flex justify-end">
               <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border inline-block ${activePub.status === 'Completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' :
-                'bg-amber-50 text-amber-600 border-amber-200'
+                activePub.status === 'Re-attempted' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' :
+                  'bg-amber-50 text-amber-600 border-amber-200'
                 }`}>
                 {activePub.status}
               </span>
@@ -137,152 +147,425 @@ export function AdminReviews({
           </div>
 
           {/* 2. Middle Section: Uploaded Manuscripts */}
-          <div className="p-6 md:p-8 space-y-4">
-            <h3 className="text-xs font-extrabold uppercase text-slate-gray tracking-wider text-left">Uploaded Manuscripts</h3>
-
-            <div className="grid grid-cols-1 gap-3">
-              <div className="border border-platinum-silver/60 p-4 rounded-xl bg-slate-50/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center space-x-4">
-                  <div className="h-12 w-12 bg-frost-gray rounded-lg border border-platinum-silver flex items-center justify-center shrink-0">
-                    <FileText className="h-6 w-6 text-slate-500" />
-                  </div>
-                  <div className="text-left">
-                    <h4 className="font-bold text-charcoal text-sm truncate max-w-sm">Manuscript PDF</h4>
-                    <p className="text-xs text-slate-gray font-mono mt-1">Submitted {activePub.submissionDate ? new Date(activePub.submissionDate).toLocaleString() : 'N/A'}</p>
-                  </div>
+          <div className="p-6 md:p-8 space-y-5 border-t border-slate-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2.5">
+                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                  <FileText className="h-4 w-4" />
                 </div>
-                {activePub.manuscriptUrl ? (
-                  <div className="flex flex-col gap-3 w-full">
-                    <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
-                      <button
-                        type="button"
-                        onClick={() => handleView(activePub.manuscriptUrl, 'manuscript')}
-                        className="px-4 py-2 bg-frost-gray hover:bg-mist-silver border border-platinum-silver rounded-lg text-charcoal flex items-center justify-center space-x-1.5 transition-colors text-xs font-bold w-full sm:w-auto shrink-0"
-                        title="View Manuscript"
-                      >
-                        {viewLoading === 'manuscript' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4 text-charcoal" />}
-                        <span>{activeView.type === 'manuscript' ? 'Close' : 'View'}</span>
-                      </button>
-                      {/* Download — unchanged */}
-                      <button
-                        onClick={() => downloadFromUrl(activePub.manuscriptUrl, `Manuscript_${activePub.id}.pdf`)}
-                        className="px-4 py-2 bg-frost-gray hover:bg-mist-silver border border-platinum-silver rounded-lg text-charcoal flex items-center justify-center space-x-1.5 transition-colors text-xs font-bold w-full sm:w-auto shrink-0"
-                        title="Download Manuscript"
-                      >
-                        <Download className="h-4 w-4" />
-                        <span>Download</span>
-                      </button>
-                    </div>
-                    {activeView.type === 'manuscript' && (
-                      <iframe
-                        src={activeView.url}
-                        className="w-full rounded-xl border border-slate-200"
-                        style={{ height: '640px' }}
-                        title="Manuscript Viewer"
-                      />
+                <div className="text-left">
+                  <h3 className="text-sm font-extrabold text-slate-800 tracking-tight">Publication Document Repository</h3>
+                  <p className="text-[11px] text-slate-400 font-medium">Official manuscript versions and evaluation reports</p>
+                </div>
+              </div>
+              <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+                {1 + rList.length + (activePub.reattemptManuscriptUrl ? 1 : 0) + reRList.length} Documents
+              </span>
+            </div>
+
+            <div className="space-y-5">
+              {/* Initial Phase Section */}
+              <div className="bg-slate-50/50 rounded-2xl border border-slate-200/90 p-4 sm:p-5 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-slate-200/60 gap-2">
+                  <div className="flex items-center space-x-2 text-xs font-bold text-slate-500 uppercase tracking-wider text-left">
+                    <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                    <span>Phase 1: Initial Submission & Review Reports</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] font-medium text-slate-500">
+                    {activePub.submissionDate && (
+                      <span className="bg-white px-2.5 py-0.5 rounded-md border border-slate-200 shadow-2xs">
+                        <strong className="text-slate-700">Submitted:</strong> {new Date(activePub.submissionDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                    )}
+                    {activePub.lastUpdated && rList.length > 0 && (
+                      <span className="bg-emerald-50 text-emerald-800 px-2.5 py-0.5 rounded-md border border-emerald-200/80 shadow-2xs">
+                        <strong className="text-emerald-900">Reviewed:</strong> {new Date(activePub.lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
                     )}
                   </div>
-                ) : (
-                  <span className="text-xs text-slate-400 italic">No file available</span>
-                )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                  {/* Original Manuscript */}
+                  <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between space-y-3">
+                    <div className="flex items-start space-x-3">
+                      <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl font-black text-[11px] shrink-0 flex items-center justify-center w-10 h-10 border border-indigo-100">
+                        PDF
+                      </div>
+                      <div className="flex-1 min-w-0 text-left">
+                        <span className="text-[9px] uppercase font-extrabold tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 inline-block mb-1">
+                          Original Submission
+                        </span>
+                        <h5 className="text-xs font-bold text-slate-800 truncate" title="Faculty Manuscript File">Faculty Manuscript File</h5>
+                      </div>
+                    </div>
+
+                    {activePub.manuscriptUrl ? (
+                      <div className="flex items-center space-x-2 pt-2 border-t border-slate-100">
+                        <button
+                          type="button"
+                          onClick={() => handleView(activePub.manuscriptUrl, 'manuscript')}
+                          className="flex-1 py-1.5 px-3 text-[11px] font-bold rounded-lg flex items-center justify-center space-x-1.5 cursor-pointer transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 active:scale-98"
+                        >
+                          {viewLoading === 'manuscript' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Eye className="h-3.5 w-3.5 text-slate-600" />}
+                          <span>{activeView.type === 'manuscript' ? 'Close View' : 'View Document'}</span>
+                        </button>
+                        <button
+                          onClick={() => downloadFromUrl(activePub.manuscriptUrl, `Manuscript_Original_${activePub.id}.pdf`)}
+                          className="flex-1 py-1.5 px-3 text-[11px] font-bold rounded-lg flex items-center justify-center space-x-1.5 cursor-pointer transition-all bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs active:scale-98"
+                        >
+                          <Download className="h-3.5 w-3.5 text-white" />
+                          <span>Download PDF</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-slate-400 italic">No file available</span>
+                    )}
+                  </div>
+
+                  {/* Initial Review PDFs */}
+                  {rList.map((url, idx) => (
+                    <div key={`r-${idx}`} className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs hover:shadow-md hover:border-emerald-300 transition-all flex flex-col justify-between space-y-3">
+                      <div className="flex items-start space-x-3">
+                        <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl font-black text-[11px] shrink-0 flex items-center justify-center w-10 h-10 border border-emerald-100">
+                          PDF
+                        </div>
+                        <div className="flex-1 min-w-0 text-left">
+                          <span className="text-[9px] uppercase font-extrabold tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 inline-block mb-1">
+                            Review Evaluation
+                          </span>
+                          <h5 className="text-xs font-bold text-slate-800 truncate" title={`Evaluation Report ${rList.length > 1 ? `#${idx + 1}` : ''}`}>
+                            Evaluation Report {rList.length > 1 ? `#${idx + 1}` : ''}
+                          </h5>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2 pt-2 border-t border-slate-100">
+                        <button
+                          type="button"
+                          onClick={() => handleView(url, `review_${idx}`)}
+                          className="flex-1 py-1.5 px-3 text-[11px] font-bold rounded-lg flex items-center justify-center space-x-1.5 cursor-pointer transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 active:scale-98"
+                        >
+                          {viewLoading === `review_${idx}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Eye className="h-3.5 w-3.5 text-slate-600" />}
+                          <span>{activeView.type === `review_${idx}` ? 'Close View' : 'View Report'}</span>
+                        </button>
+                        <button
+                          onClick={() => downloadFromUrl(url, `Review_Initial_${activePub.id}_${idx + 1}.pdf`)}
+                          className="flex-1 py-1.5 px-3 text-[11px] font-bold rounded-lg flex items-center justify-center space-x-1.5 cursor-pointer transition-all bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs active:scale-98"
+                        >
+                          <Download className="h-3.5 w-3.5 text-white" />
+                          <span>Download PDF</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
+
+              {/* Re-attempt Phase Section (If present) */}
+              {(activePub.reattemptManuscriptUrl || reRList.length > 0) && (
+                <div className="bg-amber-50/40 rounded-2xl border border-amber-200/70 p-4 sm:p-5 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-amber-200/60 gap-2">
+                    <div className="flex items-center space-x-2 text-xs font-bold text-amber-800 uppercase tracking-wider text-left">
+                      <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                      <span>Phase 2: Re-attempt Submission & Final Review</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 text-[11px] font-medium text-amber-900">
+                      {activePub.reattemptDate && (
+                        <span className="bg-white px-2.5 py-0.5 rounded-md border border-amber-200 shadow-2xs">
+                          <strong className="text-amber-950">Re-attempted:</strong> {new Date(activePub.reattemptDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                      )}
+                      {activePub.reattemptReviewedDate && (
+                        <span className="bg-emerald-50 text-emerald-800 px-2.5 py-0.5 rounded-md border border-emerald-200/80 shadow-2xs">
+                          <strong className="text-emerald-900">Re-reviewed:</strong> {new Date(activePub.reattemptReviewedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                    {activePub.reattemptManuscriptUrl && (
+                      <div className="bg-white p-4 rounded-xl border border-amber-200 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between space-y-3">
+                        <div className="flex items-start space-x-3">
+                          <div className="p-2 bg-amber-50 text-amber-700 rounded-xl font-black text-[11px] shrink-0 flex items-center justify-center w-10 h-10 border border-amber-100">
+                            PDF
+                          </div>
+                          <div className="flex-1 min-w-0 text-left">
+                            <span className="text-[9px] uppercase font-extrabold tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block mb-1">
+                              Revised Submission
+                            </span>
+                            <h5 className="text-xs font-bold text-slate-800 truncate">Re-attempted Manuscript File</h5>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-2 pt-2 border-t border-slate-100">
+                          <button
+                            type="button"
+                            onClick={() => handleView(activePub.reattemptManuscriptUrl, 'reattempt_manuscript')}
+                            className="flex-1 py-1.5 px-3 text-[11px] font-bold rounded-lg flex items-center justify-center space-x-1.5 cursor-pointer transition-all bg-amber-100 hover:bg-amber-200 text-amber-900 active:scale-98"
+                          >
+                            {viewLoading === 'reattempt_manuscript' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Eye className="h-3.5 w-3.5 text-amber-900" />}
+                            <span>{activeView.type === 'reattempt_manuscript' ? 'Close View' : 'View Document'}</span>
+                          </button>
+                          <button
+                            onClick={() => downloadFromUrl(activePub.reattemptManuscriptUrl, `Manuscript_Reattempt_${activePub.id}.pdf`)}
+                            className="flex-1 py-1.5 px-3 text-[11px] font-bold rounded-lg flex items-center justify-center space-x-1.5 cursor-pointer transition-all bg-amber-600 hover:bg-amber-700 text-white shadow-xs active:scale-98"
+                          >
+                            <Download className="h-3.5 w-3.5 text-white" />
+                            <span>Download PDF</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {reRList.map((url, idx) => (
+                      <div key={`re-r-${idx}`} className="bg-white p-4 rounded-xl border border-emerald-200 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between space-y-3">
+                        <div className="flex items-start space-x-3">
+                          <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl font-black text-[11px] shrink-0 flex items-center justify-center w-10 h-10 border border-emerald-100">
+                            PDF
+                          </div>
+                          <div className="flex-1 min-w-0 text-left">
+                            <span className="text-[9px] uppercase font-extrabold tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 inline-block mb-1">
+                              Re-attempt Evaluation
+                            </span>
+                            <h5 className="text-xs font-bold text-slate-800 truncate">Re-attempt Evaluation Report {reRList.length > 1 ? `#${idx + 1}` : ''}</h5>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-2 pt-2 border-t border-slate-100">
+                          <button
+                            type="button"
+                            onClick={() => handleView(url, `reattempt_review_${idx}`)}
+                            className="flex-1 py-1.5 px-3 text-[11px] font-bold rounded-lg flex items-center justify-center space-x-1.5 cursor-pointer transition-all bg-slate-100 hover:bg-slate-200 text-slate-700 active:scale-98"
+                          >
+                            {viewLoading === `reattempt_review_${idx}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Eye className="h-3.5 w-3.5 text-slate-600" />}
+                            <span>{activeView.type === `reattempt_review_${idx}` ? 'Close View' : 'View Report'}</span>
+                          </button>
+                          <button
+                            onClick={() => downloadFromUrl(url, `Review_Reattempt_${activePub.id}_${idx + 1}.pdf`)}
+                            className="flex-1 py-1.5 px-3 text-[11px] font-bold rounded-lg flex items-center justify-center space-x-1.5 cursor-pointer transition-all bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs active:scale-98"
+                          >
+                            <Download className="h-3.5 w-3.5 text-white" />
+                            <span>Download PDF</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
+
+              {/* Viewers */}
+              {activeView.type === 'manuscript' && (
+                <iframe
+                  src={activeView.url}
+                  className="w-full rounded-xl border border-slate-200 mt-2"
+                  style={{ height: '640px' }}
+                  title="Original Manuscript Viewer"
+                />
+              )}
+
+              {activeView.type && activeView.type.startsWith('review_') && (
+                <iframe
+                  src={activeView.url}
+                  className="w-full rounded-xl border border-emerald-200 mt-2"
+                  style={{ height: '640px' }}
+                  title="Original Review Viewer"
+                />
+              )}
+
+              {activeView.type === 'reattempt_manuscript' && (
+                <iframe
+                  src={activeView.url}
+                  className="w-full rounded-xl border border-indigo-200 mt-2"
+                  style={{ height: '640px' }}
+                  title="Re-attempted Manuscript Viewer"
+                />
+              )}
+
+              {activeView.type && activeView.type.startsWith('reattempt_review_') && (
+                <iframe
+                  src={activeView.url}
+                  className="w-full rounded-xl border border-emerald-300 mt-2"
+                  style={{ height: '640px' }}
+                  title="Re-attempted Review Viewer"
+                />
+              )}
           </div>
 
           {/* 3. Bottom Section: Upload Reviewed Document / Reviewed Document */}
           <div className="p-6 md:p-8 space-y-6 bg-slate-50/30">
             {activePub.status === 'Completed' ? (
               <>
-                <h3 className="text-xs font-extrabold uppercase text-slate-gray tracking-wider text-left">Reviewed Document</h3>
+                <h3 className="text-xs font-extrabold uppercase text-slate-gray tracking-wider text-left">Reviewed Documents</h3>
                 <div className="grid grid-cols-1 gap-3">
-                  <div className="border border-emerald-200 p-4 rounded-xl bg-emerald-50/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="flex items-center space-x-4">
-                      <div className="h-12 w-12 bg-emerald-100/50 rounded-lg border border-emerald-200 flex items-center justify-center shrink-0">
-                        <CheckCircle2 className="h-6 w-6 text-emerald-600" />
+                  {/* Initial Review PDFs */}
+                  {rList.map((url, idx) => (
+                    <div key={`c-r-${idx}`} className="border border-emerald-200 p-4 rounded-xl bg-emerald-50/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="flex items-center space-x-4">
+                        <div className="h-12 w-12 bg-emerald-100/50 rounded-lg border border-emerald-200 flex items-center justify-center shrink-0">
+                          <CheckCircle2 className="h-6 w-6 text-emerald-600" />
+                        </div>
+                        <div className="text-left">
+                          <h4 className="font-bold text-charcoal text-sm truncate max-w-sm">
+                            Initial Evaluated Document {rList.length > 1 ? `#${idx + 1}` : ''}
+                          </h4>
+                          <p className="text-xs text-slate-gray font-mono mt-1">Reviewed on {activePub.lastUpdated ? new Date(activePub.lastUpdated).toLocaleString() : 'N/A'}</p>
+                        </div>
                       </div>
-                      <div className="text-left">
-                        <h4 className="font-bold text-charcoal text-sm truncate max-w-sm">Evaluated Document</h4>
-                        <p className="text-xs text-slate-gray font-mono mt-1">Reviewed on {activePub.lastUpdated ? new Date(activePub.lastUpdated).toLocaleString() : 'N/A'}</p>
-                      </div>
-                    </div>
-                    {activePub.reviewUrl ? (
-                      <div className="flex flex-col gap-3 w-full">
+                      <div className="flex flex-col gap-3 w-full sm:w-auto">
                         <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
                           <button
                             type="button"
-                            onClick={() => handleView(activePub.reviewUrl, 'review')}
+                            onClick={() => handleView(url, `review_${idx}`)}
                             className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center justify-center space-x-1.5 transition-colors text-xs font-bold w-full sm:w-auto shrink-0 shadow-sm"
                             title="View Reviewed Document"
                           >
-                            {viewLoading === 'review' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4 text-white" />}
-                            <span>{activeView.type === 'review' ? 'Close' : 'View Review'}</span>
+                            {viewLoading === `review_${idx}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4 text-white" />}
+                            <span>{activeView.type === `review_${idx}` ? 'Close' : `View Review ${rList.length > 1 ? idx + 1 : ''}`}</span>
                           </button>
-                          {/* Download — unchanged */}
                           <button
-                            onClick={() => downloadFromUrl(activePub.reviewUrl, `Review_${activePub.id}.pdf`)}
+                            onClick={() => downloadFromUrl(url, `Review_Initial_${activePub.id}_${idx + 1}.pdf`)}
                             className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg flex items-center justify-center space-x-1.5 transition-colors text-xs font-bold w-full sm:w-auto shrink-0 shadow-sm"
                             title="Download Reviewed Document"
                           >
                             <Download className="h-4 w-4" />
-                            <span>Download Review</span>
+                            <span>Download Review {rList.length > 1 ? idx + 1 : ''}</span>
                           </button>
                         </div>
-                        {activeView.type === 'review' && (
-                          <iframe
-                            src={activeView.url}
-                            className="w-full rounded-xl border border-emerald-200"
-                            style={{ height: '640px' }}
-                            title="Review Viewer"
-                          />
-                        )}
                       </div>
-                    ) : (
-                      <span className="text-xs text-slate-400 italic">No file available</span>
-                    )}
-                  </div>
+                    </div>
+                  ))}
+
+                  {/* Re-attempted Review PDFs */}
+                  {reRList.map((url, idx) => (
+                    <div key={`c-re-${idx}`} className="border border-emerald-300 p-4 rounded-xl bg-emerald-100/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="flex items-center space-x-4">
+                        <div className="h-12 w-12 bg-emerald-200/50 rounded-lg border border-emerald-300 flex items-center justify-center shrink-0">
+                          <CheckCircle2 className="h-6 w-6 text-emerald-700" />
+                        </div>
+                        <div className="text-left">
+                          <h4 className="font-bold text-slate-900 text-sm truncate max-w-sm">
+                            Re-attempted Evaluated Document {reRList.length > 1 ? `#${idx + 1}` : ''}
+                          </h4>
+                          <p className="text-xs text-emerald-800 font-mono mt-1">Reviewed on {activePub.reattemptReviewedDate ? new Date(activePub.reattemptReviewedDate).toLocaleString() : 'N/A'}</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-3 w-full sm:w-auto">
+                        <div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
+                          <button
+                            type="button"
+                            onClick={() => handleView(url, `reattempt_review_${idx}`)}
+                            className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg flex items-center justify-center space-x-1.5 transition-colors text-xs font-bold w-full sm:w-auto shrink-0 shadow-sm"
+                            title="View Re-attempted Review Document"
+                          >
+                            {viewLoading === `reattempt_review_${idx}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4 text-white" />}
+                            <span>{activeView.type === `reattempt_review_${idx}` ? 'Close' : `View Re-attempted Review ${reRList.length > 1 ? idx + 1 : ''}`}</span>
+                          </button>
+                          <button
+                            onClick={() => downloadFromUrl(url, `Review_Reattempt_${activePub.id}_${idx + 1}.pdf`)}
+                            className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg flex items-center justify-center space-x-1.5 transition-colors text-xs font-bold w-full sm:w-auto shrink-0 shadow-sm"
+                            title="Download Re-attempted Review Document"
+                          >
+                            <Download className="h-4 w-4" />
+                            <span>Download Re-attempted Review {reRList.length > 1 ? idx + 1 : ''}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </>
             ) : (
               <>
-                <h3 className="text-xs font-extrabold uppercase text-slate-gray tracking-wider text-left">Upload Reviewed Document</h3>
+                <h3 className="text-xs font-extrabold uppercase text-slate-gray tracking-wider text-left">
+                  {activePub.status === 'Re-attempted' ? 'Upload Re-attempted Review Documents (Up to 5 files)' : 'Upload Reviewed Documents (Up to 5 files)'}
+                </h3>
 
-                <div className="space-y-2 text-left">
-                  {!reviewFile ? (
+                <div className="space-y-3 text-left">
+                  {reviewFiles.length === 0 ? (
                     <div className="border-2 border-dashed border-slate-300 rounded-xl p-10 bg-white hover:bg-slate-50 transition-colors flex flex-col items-center justify-center relative cursor-pointer group shadow-3xs">
                       <input
                         type="file"
-                        accept=".pdf,.doc,.docx"
+                        multiple
+                        accept=".pdf"
                         onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setReviewFile(file);
+                          const selected = Array.from(e.target.files || []);
+                          if (selected.length > 0) {
+                            setReviewFiles(prev => {
+                              const combined = [...prev, ...selected];
+                              if (combined.length > 5) {
+                                setErrorMsg('You can upload a maximum of 5 review PDF files.');
+                                return combined.slice(0, 5);
+                              }
+                              setErrorMsg('');
+                              return combined;
+                            });
                           }
                         }}
                         className="absolute inset-0 opacity-0 cursor-pointer"
                       />
                       <UploadCloud className="h-10 w-10 text-slate-400 group-hover:text-emerald-500 transition-colors mb-4" />
                       <span className="text-sm font-bold text-charcoal">Drag and drop or browse to upload</span>
-                      <span className="text-xs text-slate-500 mt-1.5 font-medium">Supports PDF or Word up to 100 MB</span>
+                      <span className="text-xs text-slate-500 mt-1.5 font-medium">Select up to 5 PDF files (Max 100 MB each)</span>
                     </div>
                   ) : (
-                    <div className="border border-emerald-200 bg-emerald-50/30 rounded-xl p-5 flex items-center justify-between shadow-xs animate-fade-in">
-                      <div className="flex items-center space-x-4 truncate">
-                        <div className="h-12 w-12 bg-emerald-100/50 border border-emerald-200 rounded-lg flex items-center justify-center shrink-0">
-                          <FileText className="h-6 w-6 text-emerald-600" />
-                        </div>
-                        <div className="truncate text-left">
-                          <p className="text-sm font-bold text-slate-800 truncate">{reviewFile.name}</p>
-                          <p className="text-[11px] text-emerald-700 font-semibold mt-1">Ready for upload (Max 100 MB)</p>
-                        </div>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center px-1">
+                        <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                          Selected Review Files ({reviewFiles.length}/5)
+                        </span>
+                        {reviewFiles.length < 5 && (
+                          <label className="text-xs font-bold text-emerald-600 hover:text-emerald-700 cursor-pointer underline">
+                            + Add more files
+                            <input
+                              type="file"
+                              multiple
+                              accept=".pdf"
+                              onChange={(e) => {
+                                const selected = Array.from(e.target.files || []);
+                                if (selected.length > 0) {
+                                  setReviewFiles(prev => {
+                                    const combined = [...prev, ...selected];
+                                    if (combined.length > 5) {
+                                      setErrorMsg('You can upload a maximum of 5 review PDF files.');
+                                      return combined.slice(0, 5);
+                                    }
+                                    setErrorMsg('');
+                                    return combined;
+                                  });
+                                }
+                              }}
+                              className="hidden"
+                            />
+                          </label>
+                        )}
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setReviewFile(null)}
-                        className="p-2 hover:bg-red-50 text-red-500 rounded-lg hover:text-red-700 transition-all cursor-pointer shrink-0"
-                        title="Remove file"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
+                      <div className="space-y-2">
+                        {reviewFiles.map((file, idx) => (
+                          <div key={idx} className="border border-emerald-200 bg-emerald-50/30 rounded-xl p-4 flex items-center justify-between shadow-xs animate-fade-in">
+                            <div className="flex items-center space-x-3 truncate">
+                              <div className="h-10 w-10 bg-emerald-100/50 border border-emerald-200 rounded-lg flex items-center justify-center shrink-0">
+                                <FileText className="h-5 w-5 text-emerald-600" />
+                              </div>
+                              <div className="truncate text-left">
+                                <p className="text-xs font-bold text-slate-800 truncate">{idx + 1}. {file.name}</p>
+                                <p className="text-[10px] text-emerald-700 font-semibold">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setReviewFiles(prev => prev.filter((_, i) => i !== idx))}
+                              className="p-1.5 hover:bg-red-50 text-red-500 rounded-lg hover:text-red-700 transition-all cursor-pointer shrink-0"
+                              title="Remove file"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -298,10 +581,11 @@ export function AdminReviews({
                   <button
                     type="button"
                     onClick={handleApprove}
-                    className="flex-1 py-4 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-500 shadow-sm rounded-xl flex items-center justify-center space-x-2 transition-all active:scale-95 cursor-pointer animate-fade-in"
+                    disabled={submitting}
+                    className="flex-1 py-4 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 border border-emerald-500 shadow-sm rounded-xl flex items-center justify-center space-x-2 transition-all active:scale-95 cursor-pointer animate-fade-in"
                   >
-                    <UploadCloud className="h-5 w-5" />
-                    <span>Upload Document</span>
+                    {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <UploadCloud className="h-5 w-5" />}
+                    <span>{submitting ? 'Submitting Review...' : 'Upload Document'}</span>
                   </button>
                 </div>
               </>

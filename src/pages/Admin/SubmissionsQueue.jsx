@@ -4,9 +4,10 @@
  */
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Eye, X, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Eye, X, Download, ChevronLeft, ChevronRight, Info } from 'lucide-react';
 import { SearchableDropdown } from '../../components/SearchableDropdown';
 import { DateRangePicker } from '../../components/DateRangePicker';
+import { PublicationIdInfoModal } from '../../components/PublicationIdInfoModal';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getSubmissionQueue } from '../../services/publicationService';
 
@@ -23,6 +24,7 @@ export const AdminQueuePage = ({
   const [aStartDate, setAStartDate] = useState('');
   const [aEndDate, setAEndDate] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [showInfoModal, setShowInfoModal] = useState(false);
   const itemsPerPage = 10;
 
   const [publications, setPublications] = useState([]);
@@ -52,6 +54,17 @@ export const AdminQueuePage = ({
 
   useEffect(() => {
     fetchQueue();
+  }, [currentPage, aSearchText, aStatusFilter, JSON.stringify(aInstitutionFilter), aStartDate, aEndDate, location.key]);
+
+  // Listen for global publication mutation events and window focus for auto-refresh
+  useEffect(() => {
+    const handleUpdate = () => fetchQueue();
+    window.addEventListener('publication-updated', handleUpdate);
+    window.addEventListener('focus', handleUpdate);
+    return () => {
+      window.removeEventListener('publication-updated', handleUpdate);
+      window.removeEventListener('focus', handleUpdate);
+    };
   }, [currentPage, aSearchText, aStatusFilter, JSON.stringify(aInstitutionFilter), aStartDate, aEndDate]);
 
   // Reset page when filters change
@@ -77,7 +90,11 @@ export const AdminQueuePage = ({
   const paginatedPubs = publications;
 
   return (
-    <div className="space-y-6 w-full animate-fade-in">
+    <div className="space-y-6 w-full">
+      <PublicationIdInfoModal
+        isOpen={showInfoModal}
+        onClose={() => setShowInfoModal(false)}
+      />
 
       {/* Admin advanced filters block */}
       <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-sm text-left transition-all duration-300 hover:scale-[1.01] hover:shadow-md hover:border-slate-300 relative z-20 overflow-visible">
@@ -104,7 +121,7 @@ export const AdminQueuePage = ({
           {/* Status */}
           <div className="w-full sm:w-40 shrink-0">
             <SearchableDropdown
-              options={['All statuses', 'Submitted', 'Completed']}
+              options={['All statuses', 'Submitted', 'Re-attempted', 'Completed']}
               value={aStatusFilter}
               onChange={setAStatusFilter}
               placeholder="Status"
@@ -160,7 +177,18 @@ export const AdminQueuePage = ({
               <thead>
                 <tr className="text-xs text-slate-500 font-extrabold uppercase tracking-wider bg-slate-50 border-b border-platinum-silver/45">
                   <th className="px-6 py-4 text-left">S.No</th>
-                  <th className="px-6 py-4 text-left">Publication ID</th>
+                  <th className="px-6 py-4 text-left">
+                    <div className="flex items-center space-x-1.5">
+                      <span>Publication ID</span>
+                      <button
+                        onClick={() => setShowInfoModal(true)}
+                        title="What is Publication ID?"
+                        className="p-1 rounded-full text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer"
+                      >
+                        <Info className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </th>
                   <th className="px-6 py-4 text-left">Title</th>
                   <th className="px-6 py-4 text-left">Faculty Name</th>
                   <th className="px-6 py-4 text-left">Category</th>
@@ -196,17 +224,18 @@ export const AdminQueuePage = ({
                         {pub.institution || 'N/A'}
                       </td>
 
-                      <td className="px-6 py-4 font-medium text-left">{new Date(pub.submissionDate).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 font-medium text-left">{pub.submissionDate ? new Date(pub.submissionDate).toLocaleDateString() : 'N/A'}</td>
                       <td className="px-6 py-4 text-left">
-                        <span className={`px-2 py-0.5 text-[9px] uppercase font-mono font-black rounded-full ${pub.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' :
-                          pub.status === 'Submitted' ? 'bg-amber-100 text-amber-800 animate-pulse' :
-                            'bg-slate-100 text-slate-600'
+                        <span className={`px-2.5 py-1 text-[9px] uppercase font-mono font-black rounded-full whitespace-nowrap inline-block ${pub.status === 'Completed' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
+                          pub.status === 'Re-attempted' ? 'bg-indigo-100 text-indigo-800 border border-indigo-200' :
+                            pub.status === 'Submitted' ? 'bg-amber-100 text-amber-800 border border-amber-200 animate-pulse' :
+                              'bg-slate-100 text-slate-600 border border-slate-200'
                           }`}>
                           {pub.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 font-medium text-left">
-                        {pub.status === 'Submitted' ? '-' : new Date(pub.lastUpdated).toLocaleDateString()}
+                        {(pub.status === 'Submitted' || pub.status === 'Re-attempted' || !pub.lastUpdated || isNaN(new Date(pub.lastUpdated).getTime())) ? '-' : new Date(pub.lastUpdated).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 text-center">
                         <div className="flex items-center justify-center gap-2">
